@@ -56,18 +56,31 @@ def generate_qsl():
 @app.route("/send_qsl", methods=["POST"])
 def send_qsl():
     form_data = request.form.to_dict()
+
+    send_qsl_card = form_data.get("send_qsl") == "yes"
+    log_qso = form_data.get("log_qso") == "yes"
+
     email = form_data.get("email")
     card_path = form_data.get("card_path")  # or store path somewhere
-    print(card_path)
 
-    sendMessage(
-        email,
-        "QSL card from KD8VCP",
-        "It was a pleasure connecting with you earlier. Please find the attached card. 73!",
-        card_path
-    )
+    if send_qsl_card:
+        sendMessage(
+            email,
+            "QSL card from KD8VCP",
+            "It was a pleasure connecting with you earlier. Please find the attached card. 73!",
+            card_path
+        )
 
-    flash(f"QSL card successfully sent to {email}", "success")
+    if log_qso:
+        qrz.log_qso(form_data)
+
+    actions = []
+    if send_qsl_card:
+        actions.append("QSL sent")
+    if log_qso:
+        actions.append("QSO logged")
+
+    flash(f"{' & '.join(actions)} for {form_data['With']}", "success")
     return redirect(url_for("index"))
 
 if __name__ == "__main__":
