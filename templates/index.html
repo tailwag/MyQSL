@@ -19,6 +19,16 @@
 </style>
 </head>
 <body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 <div class="search-container">
     <form method="post" class="w-50">
         <div class="input-group">
@@ -28,5 +38,13 @@
     </form>
 </div>
 </body>
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+      alert.classList.remove('show')
+      alert.classList.add('fade')
+    })
+  }, 5000)
+</script>
 </html>
 

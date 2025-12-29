@@ -1,13 +1,14 @@
+import os
 from CardGen import genCard
 from QRZ import QRZClient
 from O365_Send import sendMessage
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from O365 import Account
 
 qrz=QRZClient()
 
 app = Flask(__name__)
-
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-secret")
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -66,14 +67,8 @@ def send_qsl():
         card_path
     )
 
-    return f"QSL card sent to {email}!"
-
-@app.route("/oauth2/callback")
-def oauth2_callback():
-    code = request.args.get("code")
-    account.connection.request_token(code=code, redirect_uri='http://localhost:5000/oauth2/callback')
-    return "Authentication complete! You can now close this window."
-
+    flash(f"QSL card successfully sent to {email}", "success")
+    return redirect(url_for("index"))
 
 if __name__ == "__main__":
     app.run(debug=True)
