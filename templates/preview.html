@@ -18,6 +18,7 @@
         {% for key, value in form_data.items() %}
             <input type="hidden" name="{{ key }}" value="{{ value }}">
         {% endfor %}
+        <input type="hidden" name="card_path" value="{{ card_path }}">
         <input type="hidden" name="email" value="{{ email }}">
         <button type="submit" class="btn btn-success mt-3">Send QSL</button>
     </form>

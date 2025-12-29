@@ -2,3 +2,5 @@ __pycache__
 qslcard.jpg
 qrz_config.xml
 static/img/*.jpg
+O365_config.xml
+o365_token.txt

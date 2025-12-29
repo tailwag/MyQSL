@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 
 NS = {"qrz": "http://xmldata.qrz.com"}
 
-def load_qrz_credentials(path="qrz_credentials.xml"):
+def load_qrz_credentials(path="qrz_config.xml"):
     tree = ET.parse(path)
     root = tree.getroot()
 

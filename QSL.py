@@ -1,6 +1,8 @@
 from CardGen import genCard
 from qrz_client import QRZClient
+from O365_Send import sendMessage
 from flask import Flask, render_template, request, jsonify, redirect, url_for
+from O365 import Account
 
 qrz=QRZClient()
 
@@ -43,6 +45,7 @@ def generate_qsl():
 
     # Generate QSL card (returns file path or URL to image)
     card_path = genCard(form_data)
+    print("cardddddd: " + card_path)
 
     return render_template("preview.html",
                            card_path=card_path,
@@ -54,21 +57,23 @@ def send_qsl():
     form_data = request.form.to_dict()
     email = form_data.get("email")
     card_path = form_data.get("card_path")  # or store path somewhere
+    print(card_path)
 
-    # O365 account setup
-    credentials = ("client_id", "client_secret")
-    account = Account(credentials, auth_flow_type='credentials')
-    if not account.is_authenticated:
-        account.authenticate()
-
-    m = account.new_message()
-    m.to.add(email)
-    m.subject = f"QSL Card for {form_data.get('callsign')}"
-    m.body = "Here is your QSL card."
-    m.attachments.add(card_path)
-    m.send()
+    sendMessage(
+        email,
+        "QSL card from KD8VCP",
+        "It was a pleasure connecting with you earlier. Please find the attached card. 73!",
+        card_path
+    )
 
     return f"QSL card sent to {email}!"
+
+@app.route("/oauth2/callback")
+def oauth2_callback():
+    code = request.args.get("code")
+    account.connection.request_token(code=code, redirect_uri='http://localhost:5000/oauth2/callback')
+    return "Authentication complete! You can now close this window."
+
 
 if __name__ == "__main__":
     app.run(debug=True)
