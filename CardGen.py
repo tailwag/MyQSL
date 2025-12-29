@@ -43,6 +43,7 @@ def genCard(qslInfo):
                 operator='over'
             )
 
+        img.resize(int(img.width * 0.5), int(img.height * 0.5))
         img.save(filename=output)
 
     return output
