@@ -1,5 +1,5 @@
 from CardGen import genCard
-from qrz_client import QRZClient
+from QRZ import QRZClient
 from O365_Send import sendMessage
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from O365 import Account

@@ -2,7 +2,7 @@ from wand.image import Image
 from wand.drawing import Drawing
 
 def genCard(qslInfo):
-    blankCard = "./QSL.jpg"
+    blankCard = "./resource/img/QSL.jpg"
     dateTimeClean = qslInfo["Date"].replace(" ", "_")
     output = "./static/img/qslcard_" + qslInfo["With"] + "_" + dateTimeClean + ".jpg"
     rowSpace = 140
@@ -32,7 +32,7 @@ def genCard(qslInfo):
 
             img.annotate("73s from Michigan!", ctx, left=col1Left, baseline=rowSpace * 2)
 
-        with Image(filename='./mi.png') as overlay:
+        with Image(filename='./resource/img/mi.png') as overlay:
             overlay.resize(int(overlay.width * 0.7), int(overlay.height * 0.7))
             ovLeft = int(img.width - overlay.width - col1Left)
             ovTop = int(img.height - overlay.height - rowSpace * 4)

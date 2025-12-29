@@ -3,7 +3,7 @@ from O365 import Account
 import xml.etree.ElementTree as ET
 
 
-def load_o365_credentials(path="O365_config.xml"):
+def load_o365_credentials(path="config/O365_config.xml"):
     tree = ET.parse(path)
     root = tree.getroot()
 
