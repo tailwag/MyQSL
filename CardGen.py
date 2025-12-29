@@ -3,6 +3,8 @@ from wand.drawing import Drawing
 
 def genCard(qslInfo):
     blankCard = "./QSL.jpg"
+    dateTimeClean = qslInfo["Date"].replace(" ", "_")
+    output = "./static/img/qslcard_" + qslInfo["With"] + "_" + dateTimeClean + ".jpg"
     rowSpace = 140
     col1Left = 335
     col2Left = 800
@@ -41,4 +43,6 @@ def genCard(qslInfo):
                 operator='over'
             )
 
-        img.save(filename='qslcard.jpg')
+        img.save(filename=output)
+
+    return output

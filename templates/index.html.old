@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QSL Entry</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <h2 class="mb-4">QSL Entry</h2>
+
+    <form method="post" class="card card-body shadow-sm">
+
+        <!-- WITH -->
+        <div class="mb-3">
+            <label class="form-label">With</label>
+            <input class="form-control" name="With" required>
+        </div>
+
+        <!-- DATE -->
+        <div class="mb-3">
+            <label class="form-label">Date (UTC)</label>
+            <input class="form-control" name="Date" id="dateField">
+        </div>
+
+        <!-- BAND -->
+        <div class="mb-3">
+            <label class="form-label">Band</label>
+            <select class="form-select" name="Band" id="bandSelect">
+                <option value="">Select band</option>
+                <option>80m</option>
+                <option>40m</option>
+                <option>30m</option>
+                <option>20m</option>
+                <option>17m</option>
+                <option>15m</option>
+                <option>12m</option>
+                <option>10m</option>
+            </select>
+        </div>
+
+        <!-- MODE -->
+        <div class="mb-3">
+            <label class="form-label">Mode</label>
+            <div class="input-group">
+                <input class="form-control" name="Mode" id="modeField">
+                <button type="button" class="btn btn-outline-secondary" onclick="setMode('SSB')">SSB</button>
+                <button type="button" class="btn btn-outline-secondary" onclick="setMode('FT8')">FT8</button>
+            </div>
+        </div>
+
+        <!-- FREQ -->
+        <div class="mb-3">
+            <label class="form-label">Frequency</label>
+            <input class="form-control" name="Freq" id="freqField">
+        </div>
+
+        <!-- RST SENT -->
+        <div class="mb-3">
+            <label class="form-label">RST Sent</label>
+            <div class="input-group">
+                <input class="form-control" name="RSTS" id="rsts">
+                <button type="button" class="btn btn-outline-secondary" onclick="setRST('rsts')">59</button>
+            </div>
+        </div>
+
+        <!-- RST RECEIVED -->
+        <div class="mb-3">
+            <label class="form-label">RST Received</label>
+            <div class="input-group">
+                <input class="form-control" name="RSTR" id="rstr">
+                <button type="button" class="btn btn-outline-secondary" onclick="setRST('rstr')">59</button>
+            </div>
+        </div>
+
+        <button class="btn btn-primary">Submit</button>
+    </form>
+
+    {% if qslInfo %}
+        <pre class="mt-4 bg-white p-3 border">{{ qslInfo }}</pre>
+    {% endif %}
+</div>
+
+<script>
+/* FT8 frequencies by band */
+const ft8Freqs = {
+    "80m": "3.573MHz",
+    "40m": "7.074MHz",
+    "30m": "10.136MHz",
+    "20m": "14.074MHz",
+    "17m": "18.100MHz",
+    "15m": "21.074MHz",
+    "12m": "24.915MHz",
+    "10m": "28.074MHz"
+};
+
+/* Auto-populate UTC date/time */
+function setUTCDate() {
+    const now = new Date();
+    const utc = now.toISOString().replace("T", " ").substring(0, 16) + " UTC";
+    document.getElementById("dateField").value = utc;
+}
+
+/* Mode buttons */
+function setMode(mode) {
+    document.getElementById("modeField").value = mode;
+    maybeSetFT8Freq();
+}
+
+/* RST buttons */
+function setRST(id) {
+    document.getElementById(id).value = "59";
+}
+
+/* FT8 auto frequency */
+function maybeSetFT8Freq() {
+    const band = document.getElementById("bandSelect").value;
+    const mode = document.getElementById("modeField").value;
+
+    if (mode === "FT8" && ft8Freqs[band]) {
+        document.getElementById("freqField").value = ft8Freqs[band];
+    }
+}
+
+/* React to band changes */
+document.getElementById("bandSelect").addEventListener("change", maybeSetFT8Freq);
+
+/* Init */
+setUTCDate();
+</script>
+
+</body>
+</html>
+

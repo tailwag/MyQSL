@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>QSL Lookup</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    body { background-color: #f8f9fa; }
+    .panel {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+</style>
+</head>
+<body>
+
+<div class="container my-4">
+    <div class="row g-4">
+        <!-- QRZ Info Panel -->
+        <div class="col-md-4">
+            <div class="panel">
+                <h4>QRZ Info</h4>
+                {% if qrz_info %}
+                    <p><strong>Callsign:</strong> <a target="_blank" rel="noopener noreferrer" href="https://qrz.com/db/{{ qrz_info.callsign }}">{{ qrz_info.callsign }}</a></p>
+                    <p><strong>Name:</strong> {{ qrz_info.first_name }} {{ qrz_info.last_name }}</p>
+                    <p><strong>Email:</strong> {{ qrz_info.email or "Not public" }}</p>
+                    <p><strong>QSL Manager:</strong> {{ qrz_info.qslmgr or "N/A" }}</p>
+                    <p><strong>Country:</strong> {{ qrz_info.country }}</p>
+                {% else %}
+                    <p>No QRZ info found for this callsign.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- QSL Form Panel -->
+        <div class="col-md-8">
+            <div class="panel">
+                <h4>QSL Entry</h4>
+                <form method="post" action="{{ url_for('generate_qsl') }}">
+                    <!-- WITH -->
+                    <div class="mb-3">
+                        <label class="form-label">With</label>
+                        <input class="form-control" name="With" value="{{ qslInfo.With or '' }}" required>
+                    </div>
+
+                    <!-- DATE -->
+                    <div class="mb-3">
+                        <label class="form-label">Date (UTC)</label>
+                        <input class="form-control" name="Date" id="dateField" value="{{ qslInfo.Date or '' }}">
+                    </div>
+
+                    <!-- BAND -->
+                    <div class="mb-3">
+                        <label class="form-label">Band</label>
+                        <select class="form-select" name="Band" id="bandSelect">
+                            <option value="">Select band</option>
+                            {% for b in ['80m','40m','30m','20m','17m','15m','12m','10m'] %}
+                                <option {% if qslInfo.Band==b %}selected{% endif %}>{{ b }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- MODE -->
+                    <div class="mb-3">
+                        <label class="form-label">Mode</label>
+                        <div class="input-group">
+                            <input class="form-control" name="Mode" id="modeField" value="{{ qslInfo.Mode or '' }}">
+                            <button type="button" class="btn btn-outline-secondary" onclick="setMode('SSB')">SSB</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="setMode('FT8')">FT8</button>
+                        </div>
+                    </div>
+
+                    <!-- FREQ -->
+                    <div class="mb-3">
+                        <label class="form-label">Frequency</label>
+                        <input class="form-control" name="Freq" id="freqField" value="{{ qslInfo.Freq or '' }}">
+                    </div>
+
+                    <!-- RST SENT -->
+                    <div class="mb-3">
+                        <label class="form-label">RST Sent</label>
+                        <div class="input-group">
+                            <input class="form-control" name="RSTS" id="rsts" value="{{ qslInfo.RSTS or '' }}">
+                            <button type="button" class="btn btn-outline-secondary" onclick="setRST('rsts')">59</button>
+                        </div>
+                    </div>
+
+                    <!-- RST RECEIVED -->
+                    <div class="mb-3">
+                        <label class="form-label">RST Received</label>
+                        <div class="input-group">
+                            <input class="form-control" name="RSTR" id="rstr" value="{{ qslInfo.RSTR or '' }}">
+                            <button type="button" class="btn btn-outline-secondary" onclick="setRST('rstr')">59</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const ft8Freqs = {
+    "80m": "3.573MHz",
+    "40m": "7.074MHz",
+    "30m": "10.136MHz",
+    "20m": "14.074MHz",
+    "17m": "18.100MHz",
+    "15m": "21.074MHz",
+    "12m": "24.915MHz",
+    "10m": "28.074MHz"
+};
+
+// Auto-populate date in UTC if empty
+function setUTCDate() {
+    const now = new Date();
+    const utc = now.toISOString().replace("T", " ").substring(0,16).replace(":", "") + " UTC";
+    const field = document.getElementById("dateField");
+    if (!field.value) field.value = utc;
+}
+
+// Mode buttons
+function setMode(mode) {
+    document.getElementById("modeField").value = mode;
+    maybeSetFT8Freq();
+}
+
+// RST buttons
+function setRST(id) {
+    document.getElementById(id).value = "59";
+}
+
+// Auto-set FT8 frequency if band is selected
+function maybeSetFT8Freq() {
+    const band = document.getElementById("bandSelect").value;
+    const mode = document.getElementById("modeField").value;
+    if (mode === "FT8" && ft8Freqs[band]) {
+        document.getElementById("freqField").value = ft8Freqs[band];
+    }
+}
+
+document.getElementById("bandSelect").addEventListener("change", maybeSetFT8Freq);
+setUTCDate();
+</script>
+
+</body>
+</html>
