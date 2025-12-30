@@ -63,14 +63,31 @@
                     <!-- BAND -->
                     <div class="mb-3">
                         <label class="form-label">Band</label>
-                        <select class="form-select" name="Band" id="bandSelect">
-                            <option value="">Select band</option>
-                            {% for b in ['80m','40m','30m','20m','17m','15m','12m','10m'] %}
-                                <option {% if qslInfo.Band==b %}selected{% endif %}>{{ b }}</option>
-                            {% endfor %}
-                        </select>
+                    
+                        <div class="d-flex w-100 align-items-center gap-2">
+                            <!-- Dropdown -->
+                            <select class="form-select" name="Band" id="bandSelect">
+                                <option value="">Select band</option>
+                                {% for b in ['2200m','630m','160m','80m','60m','40m','30m','20m','17m','15m','12m','10m','6m','2m','1.25m','70cm','33cm','23cm'] %}
+                                    <option value="{{ b }}" {% if qslInfo.Band == b %}selected{% endif %}>
+                                        {{ b }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                    
+                            <!-- Buttons (no wrap, consistent height) -->
+                            <div class="btn-group flex-nowrap" role="group" aria-label="Band buttons">
+                                {% for b in ['80m','40m','30m','20m','17m','15m','12m','10m'] %}
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-primary band-btn"
+                                        onclick="setBand('{{ b }}')">
+                                        {{ b }}
+                                    </button>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
-
                     <!-- MODE -->
                     <div class="mb-3">
                         <label class="form-label">Mode</label>
@@ -78,6 +95,7 @@
                             <input class="form-control" name="Mode" id="modeField" value="{{ qslInfo.Mode or '' }}">
                             <button type="button" class="btn btn-outline-secondary" onclick="setMode('SSB')">SSB</button>
                             <button type="button" class="btn btn-outline-secondary" onclick="setMode('FT8')">FT8</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="setMode('FT4')">FT4</button>
                         </div>
                     </div>
 
@@ -124,6 +142,17 @@ const ft8Freqs = {
     "10m": "28.074MHz"
 };
 
+const ft4Freqs = {
+    "80m": "3.575MHz",
+    "40m": "7.0475MHz",
+    "30m": "10.140MHz",
+    "20m": "14.080MHz",
+    "17m": "18.104MHz",
+    "15m": "21.140MHz",
+    "12m": "24.919MHz",
+    "10m": "28.180MHz"
+}
+
 // Auto-populate date in UTC if empty
 function setUTCDate() {
     const now = new Date();
@@ -150,6 +179,9 @@ function maybeSetFT8Freq() {
     if (mode === "FT8" && ft8Freqs[band]) {
         document.getElementById("freqField").value = ft8Freqs[band];
     }
+    else if (mode === "FT4" && ft4Freqs[band]) {
+        document.getElementById("freqField").value = ft4Freqs[band];
+    }
 }
 
 document.getElementById("bandSelect").addEventListener("change", maybeSetFT8Freq);
@@ -164,6 +196,20 @@ document.getElementById('callsign-form').addEventListener('submit', function(e) 
         window.location.href = '/lookup/' + encodeURIComponent(callsign);
     }
 });
+</script>
+<script>
+function setBand(band) {
+    const select = document.getElementById('bandSelect');
+    select.value = band;
+
+    // Update active button styling
+    document.querySelectorAll('.band-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent === band);
+    });
+
+    // Trigger change event (useful for FT8 auto-frequency logic)
+    select.dispatchEvent(new Event('change'));
+}
 </script>
 </body>
 </html>
