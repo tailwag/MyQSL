@@ -1,5 +1,5 @@
 import os
-from O365 import Account
+from O365 import Account, FileSystemTokenBackend
 import xml.etree.ElementTree as ET
 
 
@@ -24,7 +24,8 @@ def load_o365_credentials(path="config/O365_config.xml"):
 
 
 credentials, tenant_id, email = load_o365_credentials()
-account = Account(credentials, tenant_id=tenant_id, auth_flow_type='credentials')
+token_backend = FileSystemTokenBackend(token_path=".", token_filename="o365_token.txt")
+account = Account(credentials, tenant_id=tenant_id, auth_flow_type='credentials', token_backend=token_backend)
 
 if not account.is_authenticated:
     account.authenticate()
@@ -36,6 +37,9 @@ def sendMessage(to, subject, body, attachment):
 
     if not os.path.isfile(attachment):
         raise RuntimeError("Attachment not found")
+
+    if not account.is_authenticated:
+        account.authenticate()
 
     try:
         mb = account.mailbox(resource=email)
