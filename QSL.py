@@ -2,7 +2,7 @@ import os
 from CardGen import genCard
 from QRZ import QRZClient
 from O365_Send import sendMessage
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 from O365 import Account
 
 qrz=QRZClient()
@@ -27,7 +27,12 @@ def lookup(callsign):
     qrz_info = qrz.lookup(callsign)
     qso_history = qrz.get_previous_qsos(callsign)
 
-    qslInfo = {}
+    qslInfo = {
+        "With": callsign,
+        "Band": session.get("last_band", ""),
+        "Mode": session.get("last_mode", ""),
+        "Freq": session.get("last_freq", "")
+    }
 
     qslInfo["With"] = callsign
 
@@ -60,6 +65,10 @@ def generate_qsl():
 @app.route("/send_qsl", methods=["POST"])
 def send_qsl():
     form_data = request.form.to_dict()
+
+    session["last_band"] = form_data.get("Band")
+    session["last_mode"] = form_data.get("Mode")
+    session["last_freq"] = form_data.get("Freq")
 
     send_qsl_card = form_data.get("send_qsl") == "yes"
     log_qso = form_data.get("log_qso") == "yes"
