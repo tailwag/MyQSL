@@ -71,13 +71,18 @@ class QRZClient:
         if call is None:
             return None
 
+        print(r.text)
         return {
+            "image": call.findtext("qrz:image", namespaces=NS),
             "callsign": call.findtext("qrz:call", namespaces=NS),
+            "class": call.findtext("qrz:class", namespaces=NS),
             "first_name": call.findtext("qrz:fname", namespaces=NS),
             "last_name": call.findtext("qrz:name", namespaces=NS),
             "email": call.findtext("qrz:email", namespaces=NS),
             "qslmgr": call.findtext("qrz:qslmgr", namespaces=NS),
             "country": call.findtext("qrz:country", namespaces=NS),
+            "state": call.findtext("qrz:state", namespaces=NS),
+            "grid": call.findtext("qrz:grid", namespaces=NS),
         }
 
     def lookup_qso_history(self, callsign):

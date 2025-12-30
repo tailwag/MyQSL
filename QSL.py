@@ -27,6 +27,27 @@ def lookup(callsign):
     qrz_info = qrz.lookup(callsign)
     qso_history = qrz.get_previous_qsos(callsign)
 
+    expandedClass = None
+    state = None
+
+    if qrz_info:
+        country = qrz_info.get("country", "")
+        if country == "United States":
+            state = qrz_info.get("state")
+
+            originalClass = qrz_info.get("class")
+
+            if originalClass == "N":
+                expandedClass = "Novice"
+            elif originalClass == "T":
+                expandedClass = "Technician"
+            elif originalClass == "G":
+                expandedClass = "General"
+            elif originalClass == "A":
+                expandedClass = "Advanced"
+            elif originalClass == "E":
+                expandedClass = "Extra"
+
     qslInfo = {
         "With": callsign,
         "Band": session.get("last_band", ""),
@@ -39,6 +60,8 @@ def lookup(callsign):
     return render_template(
         "lookup.html",
         qrz_info=qrz_info,
+        state=state,
+        expandedClass=expandedClass,
         qso_history=qso_history,
         qslInfo=qslInfo
     )

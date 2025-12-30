@@ -32,11 +32,23 @@
             <div class="panel">
                 <h4>QRZ Info</h4>
                 {% if qrz_info %}
+                    {% if qrz_info.image %}
+                    <a target="_blank" rel="noopener noreferrer" href="https://qrz.com/db/{{ qrz_info.callsign }}">
+                        <img class="img-fluid md-2 shadow" style="border-radius:10px;margin-top:10px;margin-bottom:20px;width:220px;height:220px;object-fit:cover" src="{{ qrz_info.image }}">
+                    </a>
+                    {% endif %}
                     <p><strong>Callsign:</strong> <a target="_blank" rel="noopener noreferrer" href="https://qrz.com/db/{{ qrz_info.callsign }}">{{ qrz_info.callsign }}</a></p>
+                    <p><strong>Class:</strong> {{ expandedClass or qrz_info.class }}</p>
                     <p><strong>Name:</strong> {{ qrz_info.first_name }} {{ qrz_info.last_name }}</p>
                     <p><strong>Email:</strong> {{ qrz_info.email or "Not public" }}</p>
                     <p><strong>QSL Manager:</strong> {{ qrz_info.qslmgr or "N/A" }}</p>
+
+                    {% if state %}
+                    <p><strong>State:</strong> {{ state }}</p>
+                    {% endif %}
+
                     <p><strong>Country:</strong> {{ qrz_info.country }}</p>
+                    <p><strong>Grid:</strong> {{ qrz_info.grid }}</p>
                 {% else %}
                     <p>No QRZ info found for this callsign.</p>
                 {% endif %}
