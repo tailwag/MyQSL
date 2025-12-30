@@ -22,6 +22,14 @@
         <!-- QRZ Info Panel -->
         <div class="col-md-4">
             <div class="panel">
+                <form id="callsign-form">
+                    <div class="input-group">
+                        <input id="callsign-input" class="form-control" type="text" placeholder="Enter callsign...">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </form>
+            </div>
+            <div class="panel">
                 <h4>QRZ Info</h4>
                 {% if qrz_info %}
                     <p><strong>Callsign:</strong> <a target="_blank" rel="noopener noreferrer" href="https://qrz.com/db/{{ qrz_info.callsign }}">{{ qrz_info.callsign }}</a></p>
@@ -147,6 +155,15 @@ function maybeSetFT8Freq() {
 document.getElementById("bandSelect").addEventListener("change", maybeSetFT8Freq);
 setUTCDate();
 </script>
-
+<script>
+document.getElementById('callsign-form').addEventListener('submit', function(e) {
+    e.preventDefault();  // prevent actual form submission
+    const callsign = document.getElementById('callsign-input').value.trim().toUpperCase();
+    if (callsign) {
+        // Redirect to /lookup/<callsign>
+        window.location.href = '/lookup/' + encodeURIComponent(callsign);
+    }
+});
+</script>
 </body>
 </html>
