@@ -105,12 +105,12 @@ class QRZClient:
 
         # Optional sanity check
         if "RESULT=OK" not in text:
-            return []
+            return ""
 
         # Extract ADIF only
         match = re.search(r"ADIF=(.*)", text, re.S)
         if not match:
-            return []
+            return ""
 
         adif = match.group(1)
         print(adif)
