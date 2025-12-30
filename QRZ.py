@@ -1,8 +1,11 @@
+import re
+import html
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 
 NS = {"qrz": "http://xmldata.qrz.com"}
+
 
 class QRZClient:
     def __init__(self, config_path="config/qrz_config.xml"):
@@ -21,7 +24,7 @@ class QRZClient:
 
         callsign = creds.findtext("Callsign")
         password = creds.findtext("Password")
-        apikey   = creds.findtext("APIKey")
+        apikey = creds.findtext("APIKey")
 
         if not callsign or not password:
             raise RuntimeError("QRZ credentials incomplete")
@@ -76,6 +79,65 @@ class QRZClient:
             "qslmgr": call.findtext("qrz:qslmgr", namespaces=NS),
             "country": call.findtext("qrz:country", namespaces=NS),
         }
+
+    def lookup_qso_history(self, callsign):
+        url = "https://logbook.qrz.com/api"
+
+        callsign = callsign.strip().upper()
+
+        payload = {
+            "KEY": self.apikey,
+            "ACTION": "FETCH",
+            "OPTION": "CALL:"+callsign,
+            "MAX": 5
+        }
+
+        r = requests.post(
+            url,
+            auth=(self.username, self.password),
+            data=payload,
+            timeout=10
+        )
+
+        r.raise_for_status()
+
+        text = html.unescape(r.text)
+
+        # Optional sanity check
+        if "RESULT=OK" not in text:
+            return []
+
+        # Extract ADIF only
+        match = re.search(r"ADIF=(.*)", text, re.S)
+        if not match:
+            return []
+
+        adif = match.group(1)
+        print(adif)
+        return adif
+
+    def parse_adif_records(self, adif_text):
+        records = []
+
+        # Split on <eor> (case-insensitive)
+        for rec_text in re.split(r"<eor>", adif_text, flags=re.IGNORECASE):
+            rec_text = rec_text.strip()
+            if not rec_text:
+                continue
+
+            current = {}
+            # match <FIELD:len>value
+            for field, length, value in re.findall(r"<([^:>]+):(\d+)>([^<]+)", rec_text):
+                current[field.upper()] = value[:int(length)]
+
+            if current:
+                records.append(current)
+
+        return records
+
+    def get_previous_qsos(self, callsign):
+        raw = self.lookup_qso_history(callsign)
+        return self.parse_adif_records(raw)
 
     def adif_field(self, name, value):
         """Return an ADIF field with correct length."""

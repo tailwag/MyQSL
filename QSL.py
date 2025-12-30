@@ -23,7 +23,10 @@ def index():
 @app.route("/lookup/<callsign>", methods=["GET", "POST"])
 def lookup(callsign):
     callsign = callsign.upper()
+
     qrz_info = qrz.lookup(callsign)
+    qso_history = qrz.get_previous_qsos(callsign)
+
     qslInfo = {}
 
     qslInfo["With"] = callsign
@@ -31,6 +34,7 @@ def lookup(callsign):
     return render_template(
         "lookup.html",
         qrz_info=qrz_info,
+        qso_history=qso_history,
         qslInfo=qslInfo
     )
 

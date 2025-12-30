@@ -45,6 +45,24 @@
 
         <!-- QSL Form Panel -->
         <div class="col-md-8">
+            {% if qso_history and qso_history|length > 0 %}
+            <div class="alert alert-warning mb-3">
+                <strong>Worked before:</strong>
+            
+                <ul class="mb-0 small">
+                    {% for qso in qso_history %}
+                        <li style="font-family:JetBrainsMono Nerd Font">
+                            {{ qso.QSO_DATE[:4] }}-{{ qso.QSO_DATE[4:6] }}-{{ qso.QSO_DATE[6:8] }} {{ qso.TIME_ON }} UTC —
+                            {{ qso.BAND }} {{ qso.MODE }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% else %}
+            <div class="alert alert-success mb-3">
+                <strong>New station!</strong> No previous QSOs found.
+            </div>
+            {% endif %}
             <div class="panel">
                 <h4>QSL Entry</h4>
                 <form method="post" action="{{ url_for('generate_qsl') }}">
