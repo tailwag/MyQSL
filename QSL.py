@@ -78,7 +78,6 @@ def generate_qsl():
 
     # Generate QSL card (returns file path or URL to image)
     card_path = genCard(form_data)
-    print("cardddddd: " + card_path)
 
     return render_template("preview.html",
                            card_path=card_path,

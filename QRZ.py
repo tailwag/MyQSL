@@ -71,7 +71,6 @@ class QRZClient:
         if call is None:
             return None
 
-        print(r.text)
         return {
             "image": call.findtext("qrz:image", namespaces=NS),
             "callsign": call.findtext("qrz:call", namespaces=NS),
@@ -118,7 +117,6 @@ class QRZClient:
             return ""
 
         adif = match.group(1)
-        print(adif)
         return adif
 
     def parse_adif_records(self, adif_text):
@@ -211,5 +209,4 @@ class QRZClient:
         if "RESULT=OK" not in response_text:
             raise RuntimeError(f"QRZ rejected QSO: {response_text}")
 
-        print("QRZ log successful:", response_text)
         return response_text
