@@ -63,12 +63,6 @@
     </div>
 </body>
 <script>
-    setTimeout(() => {
-        document.querySelectorAll('.alert').forEach(alert => {
-          alert.classList.remove('show')
-          alert.classList.add('fade')
-        })
-    }, 5000)
     (function () {
         const toggleBtn = document.getElementById("themeToggle");
         const body = document.body;
@@ -94,6 +88,12 @@
 
         updateLabel();
     })();
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+          alert.classList.remove('show')
+          alert.classList.add('fade')
+        })
+    }, 5000)
 </script>
 </html>
 
