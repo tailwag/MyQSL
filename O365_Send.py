@@ -3,19 +3,22 @@ from O365 import Account, FileSystemTokenBackend
 import xml.etree.ElementTree as ET
 
 
-def load_o365_credentials(path="config/O365_config.xml"):
+def load_o365_credentials(path="resource/config.xml"):
     tree = ET.parse(path)
     root = tree.getroot()
 
-    creds = root.find("Credentials")
+    o365settings = root.find("O365")
+    if o365settings is None:
+        raise RuntimeError("BAD CONFIG: Missing <O365> block")
+
+    creds = o365settings.find("Credentials")
     if creds is None:
-        raise RuntimeError("Missing <Credentials> block")
+        raise RuntimeError("Missing <Credentials> block in <O365>")
 
     client_id = creds.findtext("client_id")
     client_secret = creds.findtext("client_secret_value")
     tenant_id = creds.findtext("tenant_id")
     email = creds.findtext("email")
-    replyto = creds.findtext("replyto")
 
     if not client_id or not client_secret:
         raise RuntimeError("O365 credentials incomplete")

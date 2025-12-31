@@ -1,15 +1,25 @@
 import os
-from thumbnail import thumbnail_check 
-from CardGen import genCard
+import xmltodict
 from QRZ import QRZClient
+from CardGen import genCard
 from O365_Send import sendMessage
+from thumbnail import thumbnail_check
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
-from O365 import Account
 
-qrz=QRZClient()
+configpath = "resource/config.xml"
+xmlconfig = {}
+with open(configpath, 'r') as file:
+    xmlconfig = xmltodict.parse(file.read())
+
+_settings = xmlconfig["MyQSLConfig"]["Settings"]
+_o365 = xmlconfig["MyQSLConfig"]["O365"]
+_qrz = xmlconfig["MyQSLConfig"]["QRZ"]
+
+qrz = QRZClient()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-secret")
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -31,6 +41,7 @@ def format_mhz(freq_str: str) -> str:
         return f"{whole}.{frac.ljust(3, '0')}" + "MHz"
 
     return freq_str + "MHz"
+
 
 # Lookup and QSL page
 @app.route("/lookup/<callsign>", methods=["GET", "POST"])
@@ -89,9 +100,8 @@ def lookup(callsign):
 def get_backdrop_images():
     thumbnail_check()
 
-    path = "./static/img/backdrops"
     return sorted(
-        f for f in os.listdir(path)
+        f for f in os.listdir(_settings["QSLCard"]["ThumbnailPath"])
         if f.lower().endswith((".png", ".jpg", ".jpeg"))
     )
 
@@ -132,13 +142,14 @@ def confirm_qsl():
 
     card_path = None
     if backdrop and backdrop != "none":
-        card_path = genCard(qso, "./resource/img/backdrops/" + backdrop)
+        card_path = genCard(qso, _settings["QSLCard"]["BackdropPath"] + backdrop)
 
     if sendqsl == "yes" and card_path:
+
         sendMessage(
             email,
-            "QSL card from KD8VCP",
-            "It was a pleasure connecting with you earlier. Please find the attached card. 73!",
+            _settings["QSLCard"]["EmailSubject"],
+            _settings["QSLCard"]["EmailBody"],
             card_path
         )
 

@@ -8,7 +8,7 @@ NS = {"qrz": "http://xmldata.qrz.com"}
 
 
 class QRZClient:
-    def __init__(self, config_path="config/qrz_config.xml"):
+    def __init__(self, config_path="resource/config.xml"):
         self.config_path = config_path
         self.session_key = None
         self.session_expiry = None
@@ -18,16 +18,25 @@ class QRZClient:
         tree = ET.parse(self.config_path)
         root = tree.getroot()
 
-        creds = root.find("Credentials")
+        qrzsettings = root.find("QRZ")
+        if qrzsettings is None:
+            raise RuntimeError("BAD CONFIG: missing <QRZ> block")
+
+        creds = qrzsettings.find("Credentials")
         if creds is None:
-            raise RuntimeError("Missing <Credentials> block in QRZ config")
+            raise RuntimeError("BAD CONFIG: Missing <Credentials> block in <QRZ>")
 
         callsign = creds.findtext("Callsign")
-        password = creds.findtext("Password")
-        apikey = creds.findtext("APIKey")
+        if not callsign:
+            raise RuntimeError("BAD CONFIG: Missing <Callsign> block in <QRZ><Credentials>")
 
-        if not callsign or not password:
-            raise RuntimeError("QRZ credentials incomplete")
+        password = creds.findtext("Password")
+        if not password:
+            raise RuntimeError("BAD CONFIG: Missing <Password> block in <QRZ><Credentials>")
+
+        apikey = creds.findtext("APIKey")
+        if not apikey:
+            raise RuntimeError("BAD CONFIG: Missing <APIKey> block in <QRZ><Credentials>")
 
         return callsign.strip(), password.strip(), apikey.strip()
 

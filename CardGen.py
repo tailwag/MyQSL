@@ -16,27 +16,36 @@
 ##    5. Write generated card to file                               ##
 ######################################################################
 
+import xmltodict
 from wand.image import Image
 from wand.drawing import Drawing
 
-outputPath = './static/img/'
-overlayPath = './resource/img/Overlay.png'
-iconPath = './resource/img/icon.png'
+configpath = "resource/config.xml"
+xmlconfig = {}
+with open(configpath, 'r') as file:
+    xmlconfig = xmltodict.parse(file.read())
+
+settings = xmlconfig["MyQSLConfig"]["Settings"]["QSLCard"]
+
+outputPath  = settings["CardOutput"]
+overlayPath = settings["OverlayImage"]
+iconPath    = settings["IconPath"]
 
 # spacing values for QSO text relative to overlay image
-rowSpace = 70
-col1Left = 170
-col2Left = 400
-initBase = 575
+rowSpace = int(settings["QSODetails"]["RowSpace"])
+col1Left = int(settings["QSODetails"]["Col1Left"])
+col2Left = int(settings["QSODetails"]["Col2Left"])
+initBase = int(settings["QSODetails"]["InitBase"])
 
 # state icon positioning
-iconMarginBottom =200
-iconMarginRight = 120
+iconMarginBottom = int(settings["Icon"]["MarginBottom"])
+iconMarginRight  = int(settings["Icon"]["MarginRight"])
 
 # 73 text positioning
-sevenThreeText = "73s from Michigan!"
-textLeft = 120
-textBase = 100
+sevenThreeText = settings["Message"]["Text"]
+textLeft       = int(settings["Message"]["Left"])
+textBase       = int(settings["Message"]["Base"])
+
 
 def genCard(qslInfo, backdrop):
     # get magick gravity string from filename

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<QRZConfig>
-    <Credentials>
-        <Callsign>Your Callsign Here</Callsign>
-        <Password>Your Password Here</Password>
-    </Credentials>
-</QRZConfig>
