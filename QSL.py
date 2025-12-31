@@ -19,6 +19,18 @@ def index():
             return redirect(url_for("lookup", callsign=callsign))
     return render_template("index.html")  # static page
 
+
+def format_mhz(freq_str: str) -> str:
+    if "." not in freq_str:
+        return freq_str + ".000MHz"
+
+    whole, frac = freq_str.split(".", 1)
+
+    if len(frac) <= 3:
+        return f"{whole}.{frac.ljust(3, '0')}" + "MHz"
+
+    return freq_str + "MHz"
+
 # Lookup and QSL page
 @app.route("/lookup/<callsign>", methods=["GET", "POST"])
 def lookup(callsign):
@@ -26,6 +38,12 @@ def lookup(callsign):
 
     qrz_info = qrz.lookup(callsign)
     qso_history = qrz.get_previous_qsos(callsign)
+
+    if qso_history:
+        for qso in qso_history:
+            rawfreq = qso.get("FREQ")
+            if rawfreq:
+                qso["FREQ"] = format_mhz(rawfreq)
 
     expandedClass = None
     state = None

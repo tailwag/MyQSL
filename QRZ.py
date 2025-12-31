@@ -173,7 +173,7 @@ class QRZClient:
             self.adif_field("CALL", qso["With"]),
             self.adif_field("QSO_DATE", qso_date),
             self.adif_field("TIME_ON", time_on),
-            self.adif_field("BAND", qso["Band"].upper()),
+            self.adif_field("BAND", qso["Band"]),
             self.adif_field("MODE", qso["Mode"].upper()),
             self.adif_field("STATION_CALLSIGN", self.username),
             self.adif_field("OPERATOR", self.username),
