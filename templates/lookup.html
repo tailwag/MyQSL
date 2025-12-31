@@ -128,7 +128,7 @@
 
                                     <!-- Buttons (no wrap, consistent height) -->
                                     <div class="btn-group flex-nowrap" role="group" aria-label="Band buttons">
-                                        {% for b in ['80m','40m','30m','20m','17m','15m','12m','10m'] %}
+                                        {% for b in quickband %}
                                             <button
                                                 type="button"
                                                 class="btn btn-outline-primary band-btn"
@@ -144,9 +144,14 @@
                                 <label class="form-label">Mode</label>
                                 <div class="input-group">
                                     <input class="form-control" name="Mode" id="modeField" value="{{ qslInfo.Mode or '' }}">
-                                    <button type="button" class="btn btn-outline-secondary" onclick="setMode('SSB')">SSB</button>
-                                    <button type="button" class="btn btn-outline-secondary" onclick="setMode('FT8')">FT8</button>
-                                    <button type="button" class="btn btn-outline-secondary" onclick="setMode('FT4')">FT4</button>
+                                    {% for m in quickmode %}
+                                        <button 
+                                            type="button" 
+                                            class="btn btn-outline-secondary" 
+                                            onclick="setMode('{{ m }}')">
+                                            {{ m }}
+                                        </button>
+                                    {% endfor %}
                                 </div>
                             </div>
 
@@ -161,7 +166,14 @@
                                 <label class="form-label">RST Sent</label>
                                 <div class="input-group">
                                     <input class="form-control" name="RSTS" id="rsts" value="{{ qslInfo.RSTS or '' }}">
-                                    <button type="button" class="btn btn-outline-secondary" onclick="setRST('rsts')">59</button>
+                                    {% for s in quickrsts %}
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary" 
+                                            onclick="setRSTS('{{ s }}')">
+                                            {{ s }}
+                                        </button>
+                                    {% endfor %}
                                 </div>
                             </div>
     
@@ -170,7 +182,14 @@
                                 <label class="form-label">RST Received</label>
                                 <div class="input-group">
                                     <input class="form-control" name="RSTR" id="rstr" value="{{ qslInfo.RSTR or '' }}">
-                                    <button type="button" class="btn btn-outline-secondary" onclick="setRST('rstr')">59</button>
+                                    {% for r in quickrstr %}
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary" 
+                                            onclick="setRSTR('{{ r }}')">
+                                            {{ r }}
+                                        </button>
+                                    {% endfor %}
                                 </div>
                             </div>
                             <input type="hidden" name="__hidden_email" value="{{ qrz_info.email or '' }}" />
@@ -220,8 +239,13 @@
         }
 
         // RST buttons
-        function setRST(id) {
-            document.getElementById(id).value = "59";
+        function setRSTS(RST) {
+            document.getElementById("rsts").value = RST;
+        }
+
+        // RST buttons
+        function setRSTR(RST) {
+            document.getElementById("rstr").value = RST;
         }
 
         // Auto-set FT8 frequency if band is selected

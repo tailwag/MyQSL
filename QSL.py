@@ -87,11 +87,20 @@ def lookup(callsign):
 
     qslInfo["With"] = callsign
 
+    quickband = _settings["QuickBand"].split(",")
+    quickmode = _settings["QuickMode"].split(",")
+    quickrsts = _settings["QuickRSTS"].split(",")
+    quickrstr = _settings["QuickRSTS"].split(",")
+
     return render_template(
         "lookup.html",
         qrz_info=qrz_info,
         state=state,
         expandedClass=expandedClass,
+        quickband=quickband,
+        quickmode=quickmode,
+        quickrsts=quickrsts,
+        quickrstr=quickrstr,
         qso_history=qso_history,
         qslInfo=qslInfo
     )
