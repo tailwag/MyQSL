@@ -3,3 +3,5 @@ config/qrz_config.xml
 static/img/*.jpg
 config/O365_config.xml
 o365_token.txt
+resource/config.xml
+static/img/backdrops/*.jpg

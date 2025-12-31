@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MyQSLConfig>
+    <Settings>
+        <QSLCard>
+            <EmailSubject>QSL card from KD8VCP</EmailSubject>
+            <EmailBody>It was a pleasure connecting with you earlier. Please find the attached card. 73!</EmailBody>
+            <BackdropPath>./resource/img/backdrops/</BackdropPath>
+            <ThumbnailPath>./static/img/backdrops/</ThumbnailPath>
+        </QSLCard>
+        <QuickBand>80m,40m,30m,20m,17m,15m,12m,10m</QuickBand>
+        <QuickMode>SSB,FT8,FT4</QuickMode>
+        <QuickFreq>
+            <FT4>
+                <Band80m>3.575</Band80m>
+                <Band40m>7.0475</Band40m>
+                <Band30m>10.140</Band30m>
+                <Band20m>14.080</Band20m>
+                <Band17m>18.104</Band17m>
+                <Band15m>21.140</Band15m>
+                <Band12m>24.919</Band12m>
+                <Band10m>28.180</Band10m>
+            </FT4> 
+            <FT8>
+                <Band80m>3.573</Band80m>
+                <Band40m>7.074</Band40m>
+                <Band30m>10.136</Band30m>
+                <Band20m>14.074</Band20m>
+                <Band17m>18.100</Band17m>
+                <Band15m>21.074</Band15m>
+                <Band12m>24.915</Band12m>
+                <Band10m>28.074</Band10m>
+            </FT8>
+        </QuickFreq>
+        <QuickRSTS>57,58,59</QuickRSTS>
+        <QuickRSTR>57,58,59</QuickRSTR>
+    </Settings>
+    <O365>
+        <Credentials>
+            <client_id>CLIENT_ID_API_KEY</client_id>
+            <tenant_id>TENANT_ID_API_KEY</tenant_id>
+            <client_secret_value>CLIENT_SECRET_VALUE</client_secret_value>
+            <client_secret>CLIENT_SECRET</client_secret>
+            <email>EMAIL_ADDRESS</email>
+        </Credentials>
+    </O365>
+    <QRZ>
+        <Credentials>
+            <Callsign>Your Callsign Here</Callsign>
+            <Password>Your Password Here</Password>
+            <APIKey>Your API Key Here</APIKey>
+        </Credentials>
+    </QRZ>
+</MyQSLConfig>

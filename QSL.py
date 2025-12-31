@@ -1,4 +1,5 @@
 import os
+from thumbnail import thumbnail_check 
 from CardGen import genCard
 from QRZ import QRZClient
 from O365_Send import sendMessage
@@ -86,6 +87,8 @@ def lookup(callsign):
 
 
 def get_backdrop_images():
+    thumbnail_check()
+
     path = "./static/img/backdrops"
     return sorted(
         f for f in os.listdir(path)
@@ -129,7 +132,7 @@ def confirm_qsl():
 
     card_path = None
     if backdrop and backdrop != "none":
-        card_path = genCard(qso, "./static/img/backdrops/" + backdrop)
+        card_path = genCard(qso, "./resource/img/backdrops/" + backdrop)
 
     if sendqsl == "yes" and card_path:
         sendMessage(
