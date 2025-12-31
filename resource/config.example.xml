@@ -2,10 +2,28 @@
 <MyQSLConfig>
     <Settings>
         <QSLCard>
-            <EmailSubject>QSL card from KD8VCP</EmailSubject>
-            <EmailBody>It was a pleasure connecting with you earlier. Please find the attached card. 73!</EmailBody>
+            <EmailSubject>EMAIL SUBJECT HERE</EmailSubject>
+            <EmailBody>EMAIL BODY HERE</EmailBody>
             <BackdropPath>./resource/img/backdrops/</BackdropPath>
             <ThumbnailPath>./static/img/backdrops/</ThumbnailPath>
+            <CardOutput>./static/img/</CardOutput>
+            <OverlayImage>./resource/img/Overlay.png</OverlayImage>
+            <IconPath>./resource/img/icon.png</IconPath>
+            <QSODetails>
+                <RowSpace>70</RowSpace>
+                <Col1Left>170</Col1Left>
+                <Col2Left>400</Col2Left>
+                <InitBase>575</InitBase>
+            </QSODetails>
+            <Icon>
+                <MarginBottom>200</MarginBottom>
+                <MarginRight>120</MarginRight>
+            </Icon>
+            <Message>
+                <Text>73s from Michigan!</Text>
+                <Left>120</Left>
+                <Base>100</Base>
+            </Message>
         </QSLCard>
         <QuickBand>80m,40m,30m,20m,17m,15m,12m,10m</QuickBand>
         <QuickMode>SSB,FT8,FT4</QuickMode>
@@ -36,18 +54,18 @@
     </Settings>
     <O365>
         <Credentials>
-            <client_id>CLIENT_ID_API_KEY</client_id>
-            <tenant_id>TENANT_ID_API_KEY</tenant_id>
-            <client_secret_value>CLIENT_SECRET_VALUE</client_secret_value>
-            <client_secret>CLIENT_SECRET</client_secret>
-            <email>EMAIL_ADDRESS</email>
+            <client_id>YOUR CLIENT ID HERE</client_id>
+            <tenant_id>YOUR TENANT ID HERE</tenant_id>
+            <client_secret_value>YOUR SECRET VALUE HERE</client_secret_value>
+            <client_secret>YOUR CLIENT SECRET HERE</client_secret>
+            <email>YOUR EMAIL HERE</email>
         </Credentials>
     </O365>
     <QRZ>
         <Credentials>
-            <Callsign>Your Callsign Here</Callsign>
-            <Password>Your Password Here</Password>
-            <APIKey>Your API Key Here</APIKey>
+            <Callsign>YOUR CALLSIGN HERE</Callsign>
+            <Password>YOUR PASSWORD HERE</Password>
+            <APIKey>YOUR API KEY HERE</APIKey>
         </Credentials>
     </QRZ>
 </MyQSLConfig>
