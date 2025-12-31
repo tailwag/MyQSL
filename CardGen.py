@@ -1,49 +1,99 @@
+######################################################################
+## QSL Card Generator - Devin Shoemaker 2025 - devin@shoemaker.info ##
+## Resources:                                                       ##
+##    - backdrop image (the main image)                             ##
+##    - overlay image (what the QSO information is displayed on)    ##
+##    - icon image (I use this for your state)                      ##
+##                                                                  ##
+## Program Flow:                                                    ##
+##    1. Place QSO information text on overlay image                ##
+##    2. Place overlay image onto backdrop. Position is determined  ##
+##       by gravity string in backdrop filename. Must match format: ##
+##       somephoto-north_east.jpg                                   ##
+##       somephoto-south_west.jpg                                   ##
+##    3. State icon placed into south_east corner                   ##
+##    4. 73 test placed into south_east corner                      ##
+##    5. Write generated card to file                               ##
+######################################################################
+
 from wand.image import Image
 from wand.drawing import Drawing
 
-def genCard(qslInfo):
-    blankCard = "./resource/img/QSL.jpg"
+outputPath = './static/img/'
+overlayPath = './resource/img/Overlay.png'
+iconPath = './resource/img/icon.png'
+
+# spacing values for QSO text relative to overlay image
+rowSpace = 70
+col1Left = 170
+col2Left = 400
+initBase = 575
+
+# state icon positioning
+iconMarginBottom =200
+iconMarginRight = 120
+
+# 73 text positioning
+sevenThreeText = "73s from Michigan!"
+textLeft = 120
+textBase = 100
+
+def genCard(qslInfo, backdrop):
+    # get magick gravity string from filename
+    # 'south_west', etc.
+    gravity = backdrop.split("-")[-1]
+    gravity = gravity.split(".")[0]
+
     dateTimeClean = qslInfo["Date"].replace(" ", "_")
-    output = "./static/img/qslcard_" + qslInfo["With"] + "_" + dateTimeClean + ".jpg"
-    rowSpace = 140
-    col1Left = 335
-    col2Left = 800
 
 
-    with Image(filename=blankCard) as img:
-        with Drawing() as ctx:
-            ctx.font_family = 'JetBrainsMono Nerd Font'
-            ctx.font_style = 'normal'
-            ctx.font_size = 120
-            ctx.gravity = 'south_west'
-            ctx.fill_color = 'white'
+    with Image(filename=backdrop) as backdrop:
+        backdrop.resize(3125, 2125)
 
-            i = 0
-            baseline = 0
-            for k, v in qslInfo.items():
-                baseline = 1100 - i * rowSpace
-                img.annotate(k + ":", ctx, left=col1Left, baseline=baseline)
-                img.annotate(v, ctx, left=col2Left, baseline=baseline)
-                i = i + 1
+        with Image(filename=overlayPath) as overlay:
+            with Drawing() as ctx:
+                ctx.font_family = 'JetBrainsMono Nerd Font'
+                ctx.font_style = 'normal'
+                ctx.font_size = 60
+                ctx.gravity = 'south_west'
+                ctx.fill_color = 'white'
 
-            ctx.font_family = 'Adwaita Sans'
-            ctx.font_style = 'italic'
-            ctx.gravity = 'south_east'
+                i = 0
+                baseline = 0
+                for k, v in qslInfo.items():
+                    baseline = initBase - i * rowSpace
+                    overlay.annotate(k + ":", ctx, left=col1Left, baseline=baseline)
+                    overlay.annotate(v, ctx, left=col2Left, baseline=baseline)
+                    i = i + 1
 
-            img.annotate("73s from Michigan!", ctx, left=col1Left, baseline=rowSpace * 2)
-
-        with Image(filename='./resource/img/mi.png') as overlay:
-            overlay.resize(int(overlay.width * 0.7), int(overlay.height * 0.7))
-            ovLeft = int(img.width - overlay.width - col1Left)
-            ovTop = int(img.height - overlay.height - rowSpace * 4)
-            img.composite(
+            backdrop.composite(
                 overlay,
-                left=ovLeft,
-                top=ovTop,
+                gravity=gravity,
                 operator='over'
             )
 
-        img.resize(int(img.width * 0.5), int(img.height * 0.5))
-        img.save(filename=output)
+        with Image(filename=iconPath) as icon:
+            icon.resize(int(icon.width * 0.35), int(icon.height * 0.35))
 
-    return output
+            iconTop = backdrop.height - icon.height - iconMarginBottom
+            iconLeft = backdrop.width - icon.width - iconMarginRight
+
+            backdrop.composite(
+                icon,
+                left=iconLeft,
+                top=iconTop,
+                operator='over'
+            )
+
+        with Drawing() as ctx:
+            ctx.font_family = 'Adwaita Sans'
+            ctx.font_style = 'italic'
+            ctx.font_size = 60
+            ctx.gravity = 'south_east'
+            ctx.fill_color = 'white'
+
+            backdrop.annotate(sevenThreeText, ctx, left=textLeft, baseline=textBase)
+
+        output = outputPath + 'qslcard_' + qslInfo['With'] + '_' + dateTimeClean + '.jpg'
+        backdrop.save(filename=output)
+        return output

@@ -66,39 +66,50 @@ def lookup(callsign):
         qslInfo=qslInfo
     )
 
-@app.route("/generate_qsl", methods=["POST"])
-def generate_qsl():
-    # Get form data
-    form_data = request.form.to_dict()
-    callsign = form_data.get("With").upper()
 
-    # Lookup email from QRZ
-    qrz_info = qrz.lookup(callsign)
-    email = qrz_info.get("email") if qrz_info else None
+def get_backdrop_images():
+    path = "./static/img/backdrops"
+    return sorted(
+        f for f in os.listdir(path)
+        if f.lower().endswith((".png", ".jpg", ".jpeg"))
+    )
 
-    # Generate QSL card (returns file path or URL to image)
-    card_path = genCard(form_data)
 
-    return render_template("preview.html",
-                           card_path=card_path,
-                           email=email,
-                           form_data=form_data)
+@app.route("/qsl/choose", methods=["POST"])
+def choose_qsl():
+    qso = request.form.to_dict()
 
-@app.route("/send_qsl", methods=["POST"])
-def send_qsl():
-    form_data = request.form.to_dict()
+    backdrops = get_backdrop_images()
 
-    session["last_band"] = form_data.get("Band")
-    session["last_mode"] = form_data.get("Mode")
-    session["last_freq"] = form_data.get("Freq")
+    return render_template(
+        "choose_qsl.html",
+        qso=qso,
+        backdrops=backdrops
+    )
 
-    send_qsl_card = form_data.get("send_qsl") == "yes"
-    log_qso = form_data.get("log_qso") == "yes"
 
-    email = form_data.get("email")
-    card_path = form_data.get("card_path")  # or store path somewhere
+@app.route("/qsl/confirm", methods=["POST"])
+def confirm_qsl():
+    qso = request.form.to_dict()
 
-    if send_qsl_card:
+    email = qso.get('__hidden_email')
+    backdrop = qso.get('__hidden_backdrop')
+    sendqsl = qso.get('__hidden_send_qsl')
+    logqso = qso.get('__hidden_log_qso')
+
+    hiddenKeys = []
+    for k, v in qso.items():
+        if k[0:9] == "__hidden_":
+            hiddenKeys.append(k)
+
+    for i in hiddenKeys:
+        del qso[i]
+
+    card_path = None
+    if backdrop and backdrop != "none":
+        card_path = genCard(qso, "./static/img/backdrops/" + backdrop)
+
+    if sendqsl == "yes" and card_path:
         sendMessage(
             email,
             "QSL card from KD8VCP",
@@ -106,17 +117,11 @@ def send_qsl():
             card_path
         )
 
-    if log_qso:
-        qrz.log_qso(form_data)
+    if logqso == "yes":
+        qrz.log_qso(qso)
 
-    actions = []
-    if send_qsl_card:
-        actions.append("QSL sent")
-    if log_qso:
-        actions.append("QSO logged")
-
-    flash(f"{' & '.join(actions)} for {form_data['With']}", "success")
-    return redirect(url_for("index"))
+    flash("QSO processed successfully", "success")
+    return redirect(url_for("index", callsign=qso["With"]))
 
 if __name__ == "__main__":
     app.run(debug=True)

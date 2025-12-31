@@ -77,7 +77,7 @@
             {% endif %}
             <div class="panel">
                 <h4>QSL Entry</h4>
-                <form method="post" action="{{ url_for('generate_qsl') }}">
+                <form method="post" action="{{ url_for('choose_qsl') }}">
                     <!-- WITH -->
                     <div class="mb-3">
                         <label class="form-label">With</label>
@@ -152,7 +152,7 @@
                             <button type="button" class="btn btn-outline-secondary" onclick="setRST('rstr')">59</button>
                         </div>
                     </div>
-
+                    <input type="hidden" name="__hidden_email" value="{{ qrz_info.email or '' }}" />
                     <button class="btn btn-primary">Submit</button>
                 </form>
             </div>
