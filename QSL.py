@@ -92,6 +92,10 @@ def choose_qsl():
 def confirm_qsl():
     qso = request.form.to_dict()
 
+    session["last_band"] = qso.get("Band")
+    session["last_mode"] = qso.get("Mode")
+    session["last_freq"] = qso.get("Freq")
+
     email = qso.get('__hidden_email')
     backdrop = qso.get('__hidden_backdrop')
     sendqsl = qso.get('__hidden_send_qsl')
