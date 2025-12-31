@@ -1,245 +1,292 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>QSL Lookup</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-    body { background-color: #f8f9fa; }
-    .panel {
-        background-color: white;
-        padding: 20px;
-        border-radius: 5px;
-        box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-</style>
+    <meta charset="UTF-8">
+    <title>QSL Lookup</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <style>
+        body {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+        }
+
+        [data-bs-theme="dark"] .backdrop-option {
+            background-color: #1a1a1a;
+            border-color: #2a2a2a;
+        }
+
+        [data-bs-theme="dark"] .alert-secondary {
+            background-color: #1f1f1f;
+            border-color: #2a2a2a;
+        }
+    </style>
 </head>
-<body>
-
-<div class="container my-4">
-    <div class="row g-4">
-        <!-- QRZ Info Panel -->
-        <div class="col-md-4">
-            <div class="panel" style="margin-bottom:10px">
-                <form id="callsign-form">
-                    <div class="input-group">
-                        <input id="callsign-input" class="form-control" type="text" placeholder="Enter callsign...">
-                        <button class="btn btn-primary" type="submit">Search</button>
-                    </div>
-                </form>
-            </div>
-            <div class="panel">
-                <h4>QRZ Info</h4>
-                {% if qrz_info %}
-                    {% if qrz_info.image %}
-                    <a target="_blank" rel="noopener noreferrer" href="https://qrz.com/db/{{ qrz_info.callsign }}">
-                        <img class="img-fluid md-2 shadow" style="border-radius:10px;margin-top:10px;margin-bottom:20px;width:220px;height:220px;object-fit:cover" src="{{ qrz_info.image }}">
-                    </a>
-                    {% endif %}
-                    <p><strong>Callsign:</strong> <a target="_blank" rel="noopener noreferrer" href="https://qrz.com/db/{{ qrz_info.callsign }}">{{ qrz_info.callsign }}</a></p>
-                    <p><strong>Class:</strong> {{ expandedClass or qrz_info.class }}</p>
-                    <p><strong>Name:</strong> {{ qrz_info.first_name }} {{ qrz_info.last_name }}</p>
-                    <p><strong>Email:</strong> {{ qrz_info.email or "Not public" }}</p>
-                    <p><strong>QSL Manager:</strong> {{ qrz_info.qslmgr or "N/A" }}</p>
-
-                    {% if state %}
-                    <p><strong>State:</strong> {{ state }}</p>
-                    {% endif %}
-
-                    <p><strong>Country:</strong> {{ qrz_info.country }}</p>
-                    <p><strong>Grid:</strong> {{ qrz_info.grid }}</p>
-                {% else %}
-                    <p>No QRZ info found for this callsign.</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- QSL Form Panel -->
-        <div class="col-md-8">
-            {% if qso_history and qso_history|length > 0 %}
-            <div class="alert alert-warning mb-3">
-                <strong>Worked before:</strong>
-            
-                <ul class="mb-0 small">
-                    {% for qso in qso_history %}
-                        <li style="font-family:JetBrainsMono Nerd Font">
-                            {{ qso.QSO_DATE[:4] }}-{{ qso.QSO_DATE[4:6] }}-{{ qso.QSO_DATE[6:8] }} {{ qso.TIME_ON }} UTC —
-                            {{ qso.BAND }} {{ qso.MODE }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% else %}
-            <div class="alert alert-success mb-3">
-                <strong>New station!</strong> No previous QSOs found.
-            </div>
-            {% endif %}
-            <div class="panel">
-                <h4>QSL Entry</h4>
-                <form method="post" action="{{ url_for('choose_qsl') }}">
-                    <!-- WITH -->
-                    <div class="mb-3">
-                        <label class="form-label">With</label>
-                        <input class="form-control" name="With" value="{{ qslInfo.With or '' }}" required>
-                    </div>
-
-                    <!-- DATE -->
-                    <div class="mb-3">
-                        <label class="form-label">Date (UTC)</label>
-                        <input class="form-control" name="Date" id="dateField" value="{{ qslInfo.Date or '' }}">
-                    </div>
-
-                    <!-- BAND -->
-                    <div class="mb-3">
-                        <label class="form-label">Band</label>
-                    
-                        <div class="d-flex w-100 align-items-center gap-2">
-                            <!-- Dropdown -->
-                            <select class="form-select" name="Band" id="bandSelect">
-                                <option value="">Select band</option>
-                                {% for b in ['2200m','630m','160m','80m','60m','40m','30m','20m','17m','15m','12m','10m','6m','2m','1.25m','70cm','33cm','23cm'] %}
-                                    <option value="{{ b }}" {% if qslInfo.Band == b %}selected{% endif %}>
-                                        {{ b }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                    
-                            <!-- Buttons (no wrap, consistent height) -->
-                            <div class="btn-group flex-nowrap" role="group" aria-label="Band buttons">
-                                {% for b in ['80m','40m','30m','20m','17m','15m','12m','10m'] %}
-                                    <button
-                                        type="button"
-                                        class="btn btn-outline-primary band-btn"
-                                        onclick="setBand('{{ b }}')">
-                                        {{ b }}
-                                    </button>
-                                {% endfor %}
+<body class="container py-4" data-bs-theme="auto">
+    <div class="d-flex justify-content-end mb-3">
+        <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            id="themeToggle"
+            aria-label="Toggle dark mode"
+        >
+            🌙 Dark
+        </button>
+    </div>
+    <div class="container my-4">
+        <div class="row g-4">
+            <!-- QRZ Info Panel -->
+            <div class="col-md-4">
+                <div class="card shadow-sm bg-body" style="margin-bottom:10px">
+                    <div class="card-body">
+                        <form id="callsign-form">
+                            <div class="input-group">
+                                <input id="callsign-input" class="form-control" type="text" placeholder="Enter callsign...">
+                                <button class="btn btn-primary" type="submit">Search</button>
                             </div>
-                        </div>
+                        </form>
                     </div>
-                    <!-- MODE -->
-                    <div class="mb-3">
-                        <label class="form-label">Mode</label>
-                        <div class="input-group">
-                            <input class="form-control" name="Mode" id="modeField" value="{{ qslInfo.Mode or '' }}">
-                            <button type="button" class="btn btn-outline-secondary" onclick="setMode('SSB')">SSB</button>
-                            <button type="button" class="btn btn-outline-secondary" onclick="setMode('FT8')">FT8</button>
-                            <button type="button" class="btn btn-outline-secondary" onclick="setMode('FT4')">FT4</button>
-                        </div>
-                    </div>
+                </div>
+                <div class="card shadow-sm bg-body">
+                    <div class="card-body">
+                        <h4>QRZ Info</h4>
+                        {% if qrz_info %}
+                            {% if qrz_info.image %}
+                            <a target="_blank" rel="noopener noreferrer" href="https://qrz.com/db/{{ qrz_info.callsign }}">
+                                <img class="img-fluid md-2 shadow" style="border-radius:10px;margin-top:10px;margin-bottom:20px;width:220px;height:220px;object-fit:cover" src="{{ qrz_info.image }}">
+                            </a>
+                            {% endif %}
+                            <p><strong>Callsign:</strong> <a target="_blank" rel="noopener noreferrer" href="https://qrz.com/db/{{ qrz_info.callsign }}">{{ qrz_info.callsign }}</a></p>
+                            <p><strong>Class:</strong> {{ expandedClass or qrz_info.class }}</p>
+                            <p><strong>Name:</strong> {{ qrz_info.first_name }} {{ qrz_info.last_name }}</p>
+                            <p><strong>Email:</strong> {{ qrz_info.email or "Not public" }}</p>
+                            <p><strong>QSL Manager:</strong> {{ qrz_info.qslmgr or "N/A" }}</p>
 
-                    <!-- FREQ -->
-                    <div class="mb-3">
-                        <label class="form-label">Frequency</label>
-                        <input class="form-control" name="Freq" id="freqField" value="{{ qslInfo.Freq or '' }}">
-                    </div>
+                            {% if state %}
+                            <p><strong>State:</strong> {{ state }}</p>
+                            {% endif %}
 
-                    <!-- RST SENT -->
-                    <div class="mb-3">
-                        <label class="form-label">RST Sent</label>
-                        <div class="input-group">
-                            <input class="form-control" name="RSTS" id="rsts" value="{{ qslInfo.RSTS or '' }}">
-                            <button type="button" class="btn btn-outline-secondary" onclick="setRST('rsts')">59</button>
-                        </div>
+                            <p><strong>Country:</strong> {{ qrz_info.country }}</p>
+                            <p><strong>Grid:</strong> {{ qrz_info.grid }}</p>
+                        {% else %}
+                            <p>No QRZ info found for this callsign.</p>
+                        {% endif %}
                     </div>
+                </div>
+            </div>
 
-                    <!-- RST RECEIVED -->
-                    <div class="mb-3">
-                        <label class="form-label">RST Received</label>
-                        <div class="input-group">
-                            <input class="form-control" name="RSTR" id="rstr" value="{{ qslInfo.RSTR or '' }}">
-                            <button type="button" class="btn btn-outline-secondary" onclick="setRST('rstr')">59</button>
-                        </div>
+            <!-- QSL Form Panel -->
+            <div class="col-md-8">
+                {% if qso_history and qso_history|length > 0 %}
+                <div class="alert alert-warning mb-3">
+                    <strong>Worked before:</strong>
+
+                    <ul class="mb-0 small">
+                        {% for qso in qso_history %}
+                            <li style="font-family:JetBrainsMono Nerd Font">
+                                {{ qso.QSO_DATE[:4] }}-{{ qso.QSO_DATE[4:6] }}-{{ qso.QSO_DATE[6:8] }} {{ qso.TIME_ON }} UTC —
+                                {{ qso.BAND }} {{ qso.MODE }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% else %}
+                <div class="alert alert-success mb-3">
+                    <strong>New station!</strong> No previous QSOs found.
+                </div>
+                {% endif %}
+                <div class="card shadow-sm bg-body">
+                    <div class="card-body">
+                        <h4>QSL Entry</h4>
+                        <form method="post" action="{{ url_for('choose_qsl') }}">
+                            <!-- WITH -->
+                            <div class="mb-3">
+                                <label class="form-label">With</label>
+                                <input class="form-control" name="With" value="{{ qslInfo.With or '' }}" required>
+                            </div>
+
+                            <!-- DATE -->
+                            <div class="mb-3">
+                                <label class="form-label">Date (UTC)</label>
+                                <input class="form-control" name="Date" id="dateField" value="{{ qslInfo.Date or '' }}">
+                            </div>
+
+                            <!-- BAND -->
+                            <div class="mb-3">
+                                <label class="form-label">Band</label>
+
+                                <div class="d-flex w-100 align-items-center gap-2">
+                                    <!-- Dropdown -->
+                                    <select class="form-select" name="Band" id="bandSelect">
+                                        <option value="">Select band</option>
+                                        {% for b in ['2200m','630m','160m','80m','60m','40m','30m','20m','17m','15m','12m','10m','6m','2m','1.25m','70cm','33cm','23cm'] %}
+                                            <option value="{{ b }}" {% if qslInfo.Band == b %}selected{% endif %}>
+                                                {{ b }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+
+                                    <!-- Buttons (no wrap, consistent height) -->
+                                    <div class="btn-group flex-nowrap" role="group" aria-label="Band buttons">
+                                        {% for b in ['80m','40m','30m','20m','17m','15m','12m','10m'] %}
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-primary band-btn"
+                                                onclick="setBand('{{ b }}')">
+                                                {{ b }}
+                                            </button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- MODE -->
+                            <div class="mb-3">
+                                <label class="form-label">Mode</label>
+                                <div class="input-group">
+                                    <input class="form-control" name="Mode" id="modeField" value="{{ qslInfo.Mode or '' }}">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setMode('SSB')">SSB</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setMode('FT8')">FT8</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setMode('FT4')">FT4</button>
+                                </div>
+                            </div>
+
+                            <!-- FREQ -->
+                            <div class="mb-3">
+                                <label class="form-label">Frequency</label>
+                                <input class="form-control" name="Freq" id="freqField" value="{{ qslInfo.Freq or '' }}">
+                            </div>
+
+                            <!-- RST SENT -->
+                            <div class="mb-3">
+                                <label class="form-label">RST Sent</label>
+                                <div class="input-group">
+                                    <input class="form-control" name="RSTS" id="rsts" value="{{ qslInfo.RSTS or '' }}">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setRST('rsts')">59</button>
+                                </div>
+                            </div>
+    
+                            <!-- RST RECEIVED -->
+                            <div class="mb-3">
+                                <label class="form-label">RST Received</label>
+                                <div class="input-group">
+                                    <input class="form-control" name="RSTR" id="rstr" value="{{ qslInfo.RSTR or '' }}">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setRST('rstr')">59</button>
+                                </div>
+                            </div>
+                            <input type="hidden" name="__hidden_email" value="{{ qrz_info.email or '' }}" />
+                            <button class="btn btn-primary">Submit</button>
+                        </form>
                     </div>
-                    <input type="hidden" name="__hidden_email" value="{{ qrz_info.email or '' }}" />
-                    <button class="btn btn-primary">Submit</button>
-                </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
-<script>
-const ft8Freqs = {
-    "80m": "3.573MHz",
-    "40m": "7.074MHz",
-    "30m": "10.136MHz",
-    "20m": "14.074MHz",
-    "17m": "18.100MHz",
-    "15m": "21.074MHz",
-    "12m": "24.915MHz",
-    "10m": "28.074MHz"
-};
-
-const ft4Freqs = {
-    "80m": "3.575MHz",
-    "40m": "7.0475MHz",
-    "30m": "10.140MHz",
-    "20m": "14.080MHz",
-    "17m": "18.104MHz",
-    "15m": "21.140MHz",
-    "12m": "24.919MHz",
-    "10m": "28.180MHz"
-}
-
-// Auto-populate date in UTC if empty
-function setUTCDate() {
-    const now = new Date();
-    const utc = now.toISOString().replace("T", " ").substring(0,16).replace(":", "") + " UTC";
-    const field = document.getElementById("dateField");
-    if (!field.value) field.value = utc;
-}
-
-// Mode buttons
-function setMode(mode) {
-    document.getElementById("modeField").value = mode;
-    maybeSetFT8Freq();
-}
-
-// RST buttons
-function setRST(id) {
-    document.getElementById(id).value = "59";
-}
-
-// Auto-set FT8 frequency if band is selected
-function maybeSetFT8Freq() {
-    const band = document.getElementById("bandSelect").value;
-    const mode = document.getElementById("modeField").value;
-    if (mode === "FT8" && ft8Freqs[band]) {
-        document.getElementById("freqField").value = ft8Freqs[band];
-    }
-    else if (mode === "FT4" && ft4Freqs[band]) {
-        document.getElementById("freqField").value = ft4Freqs[band];
-    }
-}
-
-document.getElementById("bandSelect").addEventListener("change", maybeSetFT8Freq);
-setUTCDate();
-</script>
-<script>
-document.getElementById('callsign-form').addEventListener('submit', function(e) {
-    e.preventDefault();  // prevent actual form submission
-    const callsign = document.getElementById('callsign-input').value.trim().toUpperCase();
-    if (callsign) {
-        // Redirect to /lookup/<callsign>
-        window.location.href = '/lookup/' + encodeURIComponent(callsign);
-    }
-});
-</script>
-<script>
-function setBand(band) {
-    const select = document.getElementById('bandSelect');
-    select.value = band;
-
-    // Update active button styling
-    document.querySelectorAll('.band-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.textContent === band);
-    });
-
-    // Trigger change event (useful for FT8 auto-frequency logic)
-    select.dispatchEvent(new Event('change'));
-}
-</script>
 </body>
+   <script>
+        const ft8Freqs = {
+            "80m": "3.573MHz",
+            "40m": "7.074MHz",
+            "30m": "10.136MHz",
+            "20m": "14.074MHz",
+            "17m": "18.100MHz",
+            "15m": "21.074MHz",
+            "12m": "24.915MHz",
+            "10m": "28.074MHz"
+        };
+
+        const ft4Freqs = {
+            "80m": "3.575MHz",
+            "40m": "7.0475MHz",
+            "30m": "10.140MHz",
+            "20m": "14.080MHz",
+            "17m": "18.104MHz",
+            "15m": "21.140MHz",
+            "12m": "24.919MHz",
+            "10m": "28.180MHz"
+        }
+
+        // Auto-populate date in UTC if empty
+        function setUTCDate() {
+            const now = new Date();
+            const utc = now.toISOString().replace("T", " ").substring(0,16).replace(":", "") + " UTC";
+            const field = document.getElementById("dateField");
+            if (!field.value) field.value = utc;
+        }
+
+        // Mode buttons
+        function setMode(mode) {
+            document.getElementById("modeField").value = mode;
+            maybeSetFT8Freq();
+        }
+
+        // RST buttons
+        function setRST(id) {
+            document.getElementById(id).value = "59";
+        }
+
+        // Auto-set FT8 frequency if band is selected
+        function maybeSetFT8Freq() {
+            const band = document.getElementById("bandSelect").value;
+            const mode = document.getElementById("modeField").value;
+            if (mode === "FT8" && ft8Freqs[band]) {
+                document.getElementById("freqField").value = ft8Freqs[band];
+            }
+            else if (mode === "FT4" && ft4Freqs[band]) {
+                document.getElementById("freqField").value = ft4Freqs[band];
+            }
+        }
+
+        document.getElementById("bandSelect").addEventListener("change", maybeSetFT8Freq);
+        setUTCDate();
+
+
+        document.getElementById('callsign-form').addEventListener('submit', function(e) {
+            e.preventDefault();  // prevent actual form submission
+            const callsign = document.getElementById('callsign-input').value.trim().toUpperCase();
+            if (callsign) {
+                // Redirect to /lookup/<callsign>
+                window.location.href = '/lookup/' + encodeURIComponent(callsign);
+            }
+        });
+
+
+        function setBand(band) {
+            const select = document.getElementById('bandSelect');
+            select.value = band;
+
+            // Update active button styling
+            document.querySelectorAll('.band-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === band);
+            });
+
+            // Trigger change event (useful for FT8 auto-frequency logic)
+            select.dispatchEvent(new Event('change'));
+        }
+
+        (function () {
+            const toggleBtn = document.getElementById("themeToggle");
+            const body = document.body;
+
+            const savedTheme = localStorage.getItem("theme");
+
+            if (savedTheme) {
+                body.setAttribute("data-bs-theme", savedTheme);
+            }
+
+            function updateLabel() {
+                const theme = body.getAttribute("data-bs-theme");
+                toggleBtn.textContent = theme === "dark" ? "☀️ Light" : "🌙 Dark";
+            }
+
+            toggleBtn.addEventListener("click", () => {
+                const current = body.getAttribute("data-bs-theme");
+                const next = current === "dark" ? "light" : "dark";
+                body.setAttribute("data-bs-theme", next);
+                localStorage.setItem("theme", next);
+                updateLabel();
+            });
+
+            updateLabel();
+        })();
+    </script>
 </html>
