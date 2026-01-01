@@ -132,6 +132,7 @@
                                             <button
                                                 type="button"
                                                 class="btn btn-outline-primary band-btn"
+                                                tabindex="-1"
                                                 onclick="setBand('{{ b }}')">
                                                 {{ b }}
                                             </button>
@@ -147,7 +148,8 @@
                                     {% for m in quickmode %}
                                         <button 
                                             type="button" 
-                                            class="btn btn-outline-secondary" 
+                                            class="btn btn-outline-secondary"
+                                            tabindex="-1"
                                             onclick="setMode('{{ m }}')">
                                             {{ m }}
                                         </button>
