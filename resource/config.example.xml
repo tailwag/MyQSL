@@ -28,6 +28,15 @@
         <QuickBand>80m,40m,30m,20m,17m,15m,12m,10m</QuickBand>
         <QuickMode>SSB,FT8,FT4</QuickMode>
         <QuickFreq>
+            <SSB>
+                <Band80m>3.600</Band80m>
+                <Band40m>7.125</Band40m> 
+                <Band20m>14.150</Band20m>
+                <Band17m>18.110</Band17m>
+                <Band15m>21.200</Band15m>
+                <Band12m>24.930</Band12m>
+                <Band10m>28.300</Band10m>
+            </SSB>
             <FT4>
                 <Band80m>3.575</Band80m>
                 <Band40m>7.0475</Band40m>

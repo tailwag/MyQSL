@@ -43,6 +43,20 @@ def format_mhz(freq_str: str) -> str:
     return freq_str + "MHz"
 
 
+def build_quick_freqs(quickfreq_xml):
+    out = {}
+
+    for mode, bands in quickfreq_xml.items():
+        out[mode] = {}
+
+        for band_tag, freq in bands.items():
+            band = band_tag.replace("Band", "")
+
+            out[mode][band] = f"{freq}MHz"
+
+    return out
+
+
 # Lookup and QSL page
 @app.route("/lookup/<callsign>", methods=["GET", "POST"])
 def lookup(callsign):
@@ -91,6 +105,7 @@ def lookup(callsign):
     quickmode = _settings["QuickMode"].split(",")
     quickrsts = _settings["QuickRSTS"].split(",")
     quickrstr = _settings["QuickRSTS"].split(",")
+    quickfreq = build_quick_freqs(_settings["QuickFreq"])
 
     return render_template(
         "lookup.html",
@@ -101,6 +116,7 @@ def lookup(callsign):
         quickmode=quickmode,
         quickrsts=quickrsts,
         quickrstr=quickrstr,
+        quickfreq=quickfreq,
         qso_history=qso_history,
         qslInfo=qslInfo
     )

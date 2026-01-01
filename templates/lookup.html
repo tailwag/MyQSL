@@ -202,27 +202,7 @@
     </div>
 </body>
    <script>
-        const ft8Freqs = {
-            "80m": "3.573MHz",
-            "40m": "7.074MHz",
-            "30m": "10.136MHz",
-            "20m": "14.074MHz",
-            "17m": "18.100MHz",
-            "15m": "21.074MHz",
-            "12m": "24.915MHz",
-            "10m": "28.074MHz"
-        };
-
-        const ft4Freqs = {
-            "80m": "3.575MHz",
-            "40m": "7.0475MHz",
-            "30m": "10.140MHz",
-            "20m": "14.080MHz",
-            "17m": "18.104MHz",
-            "15m": "21.140MHz",
-            "12m": "24.919MHz",
-            "10m": "28.180MHz"
-        }
+        const quickFreqs = {{ quickfreq | tojson }};
 
         // Auto-populate date in UTC if empty
         function setUTCDate() {
@@ -235,7 +215,7 @@
         // Mode buttons
         function setMode(mode) {
             document.getElementById("modeField").value = mode;
-            maybeSetFT8Freq();
+            setQuickFreq();
         }
 
         // RST buttons
@@ -249,18 +229,16 @@
         }
 
         // Auto-set FT8 frequency if band is selected
-        function maybeSetFT8Freq() {
+        function setQuickFreq() {
             const band = document.getElementById("bandSelect").value;
             const mode = document.getElementById("modeField").value;
-            if (mode === "FT8" && ft8Freqs[band]) {
-                document.getElementById("freqField").value = ft8Freqs[band];
-            }
-            else if (mode === "FT4" && ft4Freqs[band]) {
-                document.getElementById("freqField").value = ft4Freqs[band];
+            const freq = quickFreqs[mode]?.[band];
+            if (freq) {
+                document.getElementById("freqField").value = freq;
             }
         }
 
-        document.getElementById("bandSelect").addEventListener("change", maybeSetFT8Freq);
+        document.getElementById("bandSelect").addEventListener("change", setQuickFreq);
         setUTCDate();
 
 
