@@ -176,7 +176,7 @@ def confirm_qsl():
     if hiddenKeys['backdrop'] and hiddenKeys['backdrop'] != "none":
         card_path = genCard(qso, get_config("Settings/QSLCard/BackdropPath") + hiddenKeys['backdrop'])
 
-    if hiddenKeys['send_qsl'] == "yes" and card_path:
+    if hiddenKeys.get('send_qsl') == "yes" and card_path:
         sendMessage(
             hiddenKeys['email'],
             get_config("Settings/QSLCard/EmailSubject"),
@@ -185,7 +185,7 @@ def confirm_qsl():
         )
 
     qso["Freq"] = adjusted_freq
-    if hiddenKeys['log_qso'] == "yes":
+    if hiddenKeys.get('log_qso') == "yes":
         qrz.log_qso(qso)
 
     flash("QSO processed successfully", "success")
