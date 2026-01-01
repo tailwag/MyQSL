@@ -3,40 +3,21 @@ import html
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from config import get_config
 
 NS = {"qrz": "http://xmldata.qrz.com"}
 
 
 class QRZClient:
-    def __init__(self, config_path="resource/config.xml"):
-        self.config_path = config_path
+    def __init__(self):
         self.session_key = None
         self.session_expiry = None
         self.username, self.password, self.apikey = self.load_credentials()
 
     def load_credentials(self):
-        tree = ET.parse(self.config_path)
-        root = tree.getroot()
-
-        qrzsettings = root.find("QRZ")
-        if qrzsettings is None:
-            raise RuntimeError("BAD CONFIG: missing <QRZ> block")
-
-        creds = qrzsettings.find("Credentials")
-        if creds is None:
-            raise RuntimeError("BAD CONFIG: Missing <Credentials> block in <QRZ>")
-
-        callsign = creds.findtext("Callsign")
-        if not callsign:
-            raise RuntimeError("BAD CONFIG: Missing <Callsign> block in <QRZ><Credentials>")
-
-        password = creds.findtext("Password")
-        if not password:
-            raise RuntimeError("BAD CONFIG: Missing <Password> block in <QRZ><Credentials>")
-
-        apikey = creds.findtext("APIKey")
-        if not apikey:
-            raise RuntimeError("BAD CONFIG: Missing <APIKey> block in <QRZ><Credentials>")
+        callsign = get_config(("QRZ/Credentials/Callsign"))
+        password = get_config(("QRZ/Credentials/Password"))
+        apikey = get_config(("QRZ/Credentials/APIKey"))
 
         return callsign.strip(), password.strip(), apikey.strip()
 

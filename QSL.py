@@ -1,19 +1,10 @@
 import os
-import xmltodict
 from QRZ import QRZClient
 from CardGen import genCard
 from O365_Send import sendMessage
 from thumbnail import thumbnail_check
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
-
-configpath = "resource/config.xml"
-xmlconfig = {}
-with open(configpath, 'r') as file:
-    xmlconfig = xmltodict.parse(file.read())
-
-_settings = xmlconfig["MyQSLConfig"]["Settings"]
-_o365 = xmlconfig["MyQSLConfig"]["O365"]
-_qrz = xmlconfig["MyQSLConfig"]["QRZ"]
+from config import get_config
 
 qrz = QRZClient()
 
@@ -101,11 +92,11 @@ def lookup(callsign):
 
     qslInfo["With"] = callsign
 
-    quickband = _settings["QuickBand"].split(",")
-    quickmode = _settings["QuickMode"].split(",")
-    quickrsts = _settings["QuickRSTS"].split(",")
-    quickrstr = _settings["QuickRSTS"].split(",")
-    quickfreq = build_quick_freqs(_settings["QuickFreq"])
+    quickband = get_config("Settings/QuickBand").split(",")
+    quickmode = get_config("Settings/QuickMode").split(",")
+    quickrsts = get_config("Settings/QuickRSTS").split(",")
+    quickrstr = get_config("Settings/QuickRSTR").split(",")
+    quickfreq = build_quick_freqs(get_config("Settings/QuickFreq"))
 
     return render_template(
         "lookup.html",
@@ -126,7 +117,7 @@ def get_backdrop_images():
     thumbnail_check()
 
     return sorted(
-        f for f in os.listdir(_settings["QSLCard"]["ThumbnailPath"])
+        f for f in os.listdir(get_config("Settings/QSLCard/ThumbnailPath"))
         if f.lower().endswith((".png", ".jpg", ".jpeg"))
     )
 
@@ -167,14 +158,14 @@ def confirm_qsl():
 
     card_path = None
     if backdrop and backdrop != "none":
-        card_path = genCard(qso, _settings["QSLCard"]["BackdropPath"] + backdrop)
+        card_path = genCard(qso, get_config("Settings/QSLCard/BackdropPath") + backdrop)
 
     if sendqsl == "yes" and card_path:
 
         sendMessage(
             email,
-            _settings["QSLCard"]["EmailSubject"],
-            _settings["QSLCard"]["EmailBody"],
+            get_config("Settings/QSLCard/EmailSubject"),
+            get_config("Settings/QSLCard/EmailBody"),
             card_path
         )
 

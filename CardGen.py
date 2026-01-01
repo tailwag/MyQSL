@@ -16,35 +16,28 @@
 ##    5. Write generated card to file                               ##
 ######################################################################
 
-import xmltodict
 from wand.image import Image
 from wand.drawing import Drawing
+from config import get_config
 
-configpath = "resource/config.xml"
-xmlconfig = {}
-with open(configpath, 'r') as file:
-    xmlconfig = xmltodict.parse(file.read())
-
-settings = xmlconfig["MyQSLConfig"]["Settings"]["QSLCard"]
-
-outputPath  = settings["CardOutput"]
-overlayPath = settings["OverlayImage"]
-iconPath    = settings["IconPath"]
+outputPath  = get_config("Settings/QSLCard/CardOutput")
+overlayPath = get_config("Settings/QSLCard/OverlayImage")
+iconPath    = get_config("Settings/QSLCard/IconPath")
 
 # spacing values for QSO text relative to overlay image
-rowSpace = int(settings["QSODetails"]["RowSpace"])
-col1Left = int(settings["QSODetails"]["Col1Left"])
-col2Left = int(settings["QSODetails"]["Col2Left"])
-initBase = int(settings["QSODetails"]["InitBase"])
+rowSpace = int(get_config("Settings/QSLCard/QSODetails/RowSpace"))
+col1Left = int(get_config("Settings/QSLCard/QSODetails/Col1Left"))
+col2Left = int(get_config("Settings/QSLCard/QSODetails/Col2Left"))
+initBase = int(get_config("Settings/QSLCard/QSODetails/InitBase"))
 
 # state icon positioning
-iconMarginBottom = int(settings["Icon"]["MarginBottom"])
-iconMarginRight  = int(settings["Icon"]["MarginRight"])
+iconMarginBottom = int(get_config("Settings/QSLCard/Icon/MarginBottom"))
+iconMarginRight  = int(get_config("Settings/QSLCard/Icon/MarginRight"))
 
 # 73 text positioning
-sevenThreeText = settings["Message"]["Text"]
-textLeft       = int(settings["Message"]["Left"])
-textBase       = int(settings["Message"]["Base"])
+sevenThreeText = get_config("Settings/QSLCard/Message/Text")
+textLeft       = int(get_config("Settings/QSLCard/Message/Left"))
+textBase       = int(get_config("Settings/QSLCard/Message/Base"))
 
 
 def genCard(qslInfo, backdrop):

@@ -1,27 +1,14 @@
 import os
 from O365 import Account, FileSystemTokenBackend
 import xml.etree.ElementTree as ET
+from config import get_config
 
 
 def load_o365_credentials(path="resource/config.xml"):
-    tree = ET.parse(path)
-    root = tree.getroot()
-
-    o365settings = root.find("O365")
-    if o365settings is None:
-        raise RuntimeError("BAD CONFIG: Missing <O365> block")
-
-    creds = o365settings.find("Credentials")
-    if creds is None:
-        raise RuntimeError("Missing <Credentials> block in <O365>")
-
-    client_id = creds.findtext("client_id")
-    client_secret = creds.findtext("client_secret_value")
-    tenant_id = creds.findtext("tenant_id")
-    email = creds.findtext("email")
-
-    if not client_id or not client_secret:
-        raise RuntimeError("O365 credentials incomplete")
+    client_id = get_config("O365/Credentials/ClientID")
+    tenant_id = get_config("O365/Credentials/TenantID")
+    client_secret = get_config("O365/Credentials/SecretValue")
+    email = get_config("O365/Credentials/Email")
 
     return (client_id.strip(), client_secret.strip()), tenant_id.strip(), email.strip()
 
