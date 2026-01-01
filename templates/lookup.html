@@ -163,7 +163,8 @@
                                 <label class="form-label">Frequency</label>
                                 <div class="input-group">
                                     <input class="form-control" name="Freq" id="freqField" value="{{ qslInfo.Freq or '' }}">
-                                    <div class="input-group-text"><strong>MHz</strong></div>
+                                    <div class="input-group-text"><strong id="fpLabel">MHz</strong></div>
+                                    <input id="fpValue" type="hidden" name="__hidden_frequency_prefix" value="MHz"/>
                                 </div>
                             </div>
 
@@ -246,9 +247,25 @@
             }
         }
 
-        document.getElementById("bandSelect").addEventListener("change", setQuickFreq);
-        setUTCDate();
+        function setFreqLabel() {
+            const band = document.getElementById("bandSelect").value;
 
+            var fpText = "MHz";
+
+            if (band === "630m" || band === "2200m") {
+                fpText = "KHz";
+            }
+
+            document.getElementById("fpValue").value = fpText;
+            document.getElementById("fpLabel").innerText = fpText;
+        }
+
+        document.getElementById("bandSelect").addEventListener("change", setQuickFreq);
+        document.getElementById("bandSelect").addEventListener("change", setFreqLabel);
+
+        setUTCDate();
+        setQuickFreq();
+        setFreqLabel();
 
         document.getElementById('callsign-form').addEventListener('submit', function(e) {
             e.preventDefault();  // prevent actual form submission

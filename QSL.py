@@ -151,35 +151,41 @@ def confirm_qsl():
     session["last_mode"] = qso.get("Mode")
     session["last_freq"] = qso.get("Freq")
 
-    email = qso.get('__hidden_email')
-    backdrop = qso.get('__hidden_backdrop')
-    sendqsl = qso.get('__hidden_send_qsl')
-    logqso = qso.get('__hidden_log_qso')
-
-    hiddenKeys = []
+    # extra values we need from the form, but must be
+    # removed before the QSL card gets generated
+    hiddenKeys = {}
     for k, v in qso.items():
         if k[0:9] == "__hidden_":
-            hiddenKeys.append(k)
+            hiddenKeys[k[9:]] = v
 
     for i in hiddenKeys:
-        del qso[i]
+        del qso['__hidden_' + i]
 
-    if qso["Freq"][:3] != "MHz":
-        qso["Freq"] = qso["Freq"] + "MHz"
+    # deal with MyQSO / QRZ low band frequency discrepancy
+    # I think most people would prefer 137KHz to be labeled as 
+    # such, but QRZ expects 0.137MHz
+    original_freq = qso.get('Freq')
+    adjusted_freq = original_freq
+    if hiddenKeys['frequency_prefix'] == "KHz":
+        adjusted_freq = str(float(adjusted_freq) / 1000.0)
 
+    qso["Freq"] = original_freq + hiddenKeys['frequency_prefix']
+
+    # generate QSL card using selected background
     card_path = None
-    if backdrop and backdrop != "none":
-        card_path = genCard(qso, get_config("Settings/QSLCard/BackdropPath") + backdrop)
+    if hiddenKeys['backdrop'] and hiddenKeys['backdrop'] != "none":
+        card_path = genCard(qso, get_config("Settings/QSLCard/BackdropPath") + hiddenKeys['backdrop'])
 
-    if sendqsl == "yes" and card_path:
+    if hiddenKeys['send_qsl'] == "yes" and card_path:
         sendMessage(
-            email,
+            hiddenKeys['email'],
             get_config("Settings/QSLCard/EmailSubject"),
             get_config("Settings/QSLCard/EmailBody"),
             card_path
         )
 
-    if logqso == "yes":
+    qso["Freq"] = adjusted_freq
+    if hiddenKeys['log_qso'] == "yes":
         qrz.log_qso(qso)
 
     flash("QSO processed successfully", "success")
