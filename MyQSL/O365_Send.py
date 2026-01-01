@@ -1,7 +1,7 @@
 import os
 from O365 import Account, FileSystemTokenBackend
-import xml.etree.ElementTree as ET
-from config import get_config
+
+from MyQSL.config import get_config
 
 
 def load_o365_credentials(path="resource/config.xml"):

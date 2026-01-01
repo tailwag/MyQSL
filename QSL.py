@@ -1,10 +1,11 @@
 import os
-from QRZ import QRZClient
-from CardGen import genCard
-from O365_Send import sendMessage
-from thumbnail import thumbnail_check
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
-from config import get_config
+
+from MyQSL.QRZ import QRZClient
+from MyQSL.CardGen import genCard
+from MyQSL.O365_Send import sendMessage
+from MyQSL.thumbnail import thumbnail_check
+from MyQSL.config import get_config
 
 qrz = QRZClient()
 

@@ -3,7 +3,8 @@ import html
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
-from config import get_config
+
+from MyQSL.config import get_config
 
 NS = {"qrz": "http://xmldata.qrz.com"}
 

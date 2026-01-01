@@ -18,7 +18,8 @@
 
 from wand.image import Image
 from wand.drawing import Drawing
-from config import get_config
+
+from MyQSL.config import get_config
 
 outputPath  = get_config("Settings/QSLCard/CardOutput")
 overlayPath = get_config("Settings/QSLCard/OverlayImage")
