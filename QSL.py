@@ -1,3 +1,10 @@
+####################################################################
+# MyQSL             - Devin Shoemaker 2025 - devin@shoemaker.info  #
+#                                                                  #
+# This is the main app file. It will spawn a flask webserver for   #
+# you to interact with from your browser.                          #
+####################################################################
+
 import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 

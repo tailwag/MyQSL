@@ -1,20 +1,20 @@
-######################################################################
-## QSL Card Generator - Devin Shoemaker 2025 - devin@shoemaker.info ##
-## Resources:                                                       ##
-##    - backdrop image (the main image)                             ##
-##    - overlay image (what the QSO information is displayed on)    ##
-##    - icon image (I use this for your state)                      ##
-##                                                                  ##
-## Program Flow:                                                    ##
-##    1. Place QSO information text on overlay image                ##
-##    2. Place overlay image onto backdrop. Position is determined  ##
-##       by gravity string in backdrop filename. Must match format: ##
-##       somephoto-north_east.jpg                                   ##
-##       somephoto-south_west.jpg                                   ##
-##    3. State icon placed into south_east corner                   ##
-##    4. 73 test placed into south_east corner                      ##
-##    5. Write generated card to file                               ##
-######################################################################
+####################################################################
+# QSL Card Generator - Devin Shoemaker 2025 - devin@shoemaker.info #
+# Resources:                                                       #
+#    - backdrop image (the main image)                             #
+#    - overlay image (what the QSO information is displayed on)    #
+#    - icon image (I use this for your state)                      #
+#                                                                  #
+# Program Flow:                                                    #
+#    1. Place QSO information text on overlay image                #
+#    2. Place overlay image onto backdrop. Position is determined  #
+#       by gravity string in backdrop filename. Must match format: #
+#       somephoto-north_east.jpg                                   #
+#       somephoto-south_west.jpg                                   #
+#    3. State icon placed into south_east corner                   #
+#    4. 73 test placed into south_east corner                      #
+#    5. Write generated card to file                               #
+####################################################################
 
 from wand.image import Image
 from wand.drawing import Drawing
