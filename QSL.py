@@ -51,7 +51,7 @@ def build_quick_freqs(quickfreq_xml):
         for band_tag, freq in bands.items():
             band = band_tag.replace("Band", "")
 
-            out[mode][band] = f"{freq}MHz"
+            out[mode][band] = f"{freq}"
 
     return out
 
@@ -164,12 +164,14 @@ def confirm_qsl():
     for i in hiddenKeys:
         del qso[i]
 
+    if qso["Freq"][:3] != "MHz":
+        qso["Freq"] = qso["Freq"] + "MHz"
+
     card_path = None
     if backdrop and backdrop != "none":
         card_path = genCard(qso, get_config("Settings/QSLCard/BackdropPath") + backdrop)
 
     if sendqsl == "yes" and card_path:
-
         sendMessage(
             email,
             get_config("Settings/QSLCard/EmailSubject"),

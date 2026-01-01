@@ -161,7 +161,10 @@
                             <!-- FREQ -->
                             <div class="mb-3">
                                 <label class="form-label">Frequency</label>
-                                <input class="form-control" name="Freq" id="freqField" value="{{ qslInfo.Freq or '' }}">
+                                <div class="input-group">
+                                    <input class="form-control" name="Freq" id="freqField" value="{{ qslInfo.Freq or '' }}">
+                                    <div class="input-group-text"><strong>MHz</strong></div>
+                                </div>
                             </div>
 
                             <!-- RST SENT -->
