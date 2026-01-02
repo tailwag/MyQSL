@@ -20,16 +20,9 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-secret")
 
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        callsign = request.form.get("callsign", "").upper()
-        if callsign:
-            # Redirect to /lookup/<callsign>
-            return redirect(url_for("lookup", callsign=callsign))
-    return render_template("index.html")  # static page
-
-
+######################################################################
+# Support functions                                                  #
+######################################################################
 def format_mhz(freq_str: str) -> str:
     if "." not in freq_str:
         return freq_str + ".000MHz"
@@ -56,12 +49,58 @@ def build_quick_freqs(quickfreq_xml):
     return out
 
 
+def get_backdrop_images():
+    thumbnail_check()
+
+    return sorted(
+        f for f in os.listdir(get_config("Settings/QSLCard/ThumbnailPath"))
+        if f.lower().endswith((".png", ".jpg", ".jpeg"))
+    )
+
+
+def expand_class(qrz_info):
+    if not qrz_info:
+        return qrz_info
+
+    country = qrz_info.get("country")
+    if country != "United States":
+        return qrz_info
+
+    expanded_names = {
+        "N": "Novice",
+        "T": "Technician",
+        "G": "General",
+        "A": "Advanced",
+        "E": "Extra"
+    }
+
+    for k, v in expanded_names.items():
+        if k == qrz_info.get("class"):
+            qrz_info["class"] = v
+            break
+
+    return qrz_info
+
+
+######################################################################
+# Flask routes                                                       #
+######################################################################
+# Landing page
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        callsign = request.form.get("callsign", "").upper()
+        if callsign:
+            return redirect(url_for("lookup", callsign=callsign))
+    return render_template("index.html")
+
+
 # Lookup and QSL page
 @app.route("/lookup/<callsign>", methods=["GET", "POST"])
 def lookup(callsign):
     callsign = callsign.upper()
 
-    qrz_info = qrz.lookup(callsign)
+    qrz_info = expand_class(qrz.lookup(callsign))
     qso_history = qrz.get_previous_qsos(callsign)
 
     if qso_history:
@@ -70,26 +109,6 @@ def lookup(callsign):
             if rawfreq:
                 qso["FREQ"] = format_mhz(rawfreq)
 
-    expandedClass = None
-    state = None
-
-    if qrz_info:
-        country = qrz_info.get("country", "")
-        if country == "United States":
-            state = qrz_info.get("state")
-
-            originalClass = qrz_info.get("class")
-
-            if originalClass == "N":
-                expandedClass = "Novice"
-            elif originalClass == "T":
-                expandedClass = "Technician"
-            elif originalClass == "G":
-                expandedClass = "General"
-            elif originalClass == "A":
-                expandedClass = "Advanced"
-            elif originalClass == "E":
-                expandedClass = "Extra"
 
     qslInfo = {
         "With": callsign,
@@ -109,8 +128,6 @@ def lookup(callsign):
     return render_template(
         "lookup.html",
         qrz_info=qrz_info,
-        state=state,
-        expandedClass=expandedClass,
         quickband=quickband,
         quickmode=quickmode,
         quickrsts=quickrsts,
@@ -118,15 +135,6 @@ def lookup(callsign):
         quickfreq=quickfreq,
         qso_history=qso_history,
         qslInfo=qslInfo
-    )
-
-
-def get_backdrop_images():
-    thumbnail_check()
-
-    return sorted(
-        f for f in os.listdir(get_config("Settings/QSLCard/ThumbnailPath"))
-        if f.lower().endswith((".png", ".jpg", ".jpeg"))
     )
 
 

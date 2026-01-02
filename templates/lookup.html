@@ -58,13 +58,13 @@
                             </a>
                             {% endif %}
                             <p><strong>Callsign:</strong> <a target="_blank" tabindex="-1" rel="noopener noreferrer" href="https://qrz.com/db/{{ qrz_info.callsign }}">{{ qrz_info.callsign }}</a></p>
-                            <p><strong>Class:</strong> {{ expandedClass or qrz_info.class }}</p>
+                            <p><strong>Class:</strong> {{ qrz_info.class }}</p>
                             <p><strong>Name:</strong> {{ qrz_info.first_name }} {{ qrz_info.last_name }}</p>
                             <p><strong>Email:</strong> {{ qrz_info.email or "Not public" }}</p>
                             <p><strong>QSL Manager:</strong> {{ qrz_info.qslmgr or "N/A" }}</p>
 
-                            {% if state %}
-                            <p><strong>State:</strong> {{ state }}</p>
+                            {% if qrz_info.state %}
+                            <p><strong>State:</strong> {{ qrz_info.state }}</p>
                             {% endif %}
 
                             <p><strong>Country:</strong> {{ qrz_info.country }}</p>
