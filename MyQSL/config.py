@@ -27,7 +27,7 @@ def get_config(path, required=True):
         if current_level.get(i) is None:
             # allow for optional values
             # can use this to check if a value is defined
-            if i == last_value and required == False:
+            if i == last_value and required is False:
                 return None
 
             raise RuntimeError("BAD CONFIG: <" + i + "> config block not found")
@@ -35,3 +35,24 @@ def get_config(path, required=True):
         current_level = current_level[i]
 
     return current_level
+
+
+def build_quick_freqs(quickfreq_xml):
+    out = {}
+
+    for mode, bands in quickfreq_xml.items():
+        out[mode] = {}
+
+        for band_tag, freq in bands.items():
+            band = band_tag.replace("Band", "")
+
+            out[mode][band] = f"{freq}"
+
+    return out
+
+
+def get_backdrop_images():
+    return sorted(
+        f for f in os.listdir(get_config("Settings/QSLCard/ThumbnailPath"))
+        if f.lower().endswith((".png", ".jpg", ".jpeg"))
+    )

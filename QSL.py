@@ -8,11 +8,11 @@
 import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 
-from MyQSL.QRZ import QRZClient
 from MyQSL.CardGen import genCard
 from MyQSL.O365_Send import sendMessage
 from MyQSL.thumbnail import thumbnail_check
-from MyQSL.config import get_config
+from MyQSL.QRZ import QRZClient, expand_class
+from MyQSL.config import get_config, build_quick_freqs, get_backdrop_images
 
 qrz = QRZClient()
 
@@ -33,53 +33,6 @@ def format_mhz(freq_str: str) -> str:
         return f"{whole}.{frac.ljust(3, '0')}" + "MHz"
 
     return freq_str + "MHz"
-
-
-def build_quick_freqs(quickfreq_xml):
-    out = {}
-
-    for mode, bands in quickfreq_xml.items():
-        out[mode] = {}
-
-        for band_tag, freq in bands.items():
-            band = band_tag.replace("Band", "")
-
-            out[mode][band] = f"{freq}"
-
-    return out
-
-
-def get_backdrop_images():
-    thumbnail_check()
-
-    return sorted(
-        f for f in os.listdir(get_config("Settings/QSLCard/ThumbnailPath"))
-        if f.lower().endswith((".png", ".jpg", ".jpeg"))
-    )
-
-
-def expand_class(qrz_info):
-    if not qrz_info:
-        return qrz_info
-
-    country = qrz_info.get("country")
-    if country != "United States":
-        return qrz_info
-
-    expanded_names = {
-        "N": "Novice",
-        "T": "Technician",
-        "G": "General",
-        "A": "Advanced",
-        "E": "Extra"
-    }
-
-    for k, v in expanded_names.items():
-        if k == qrz_info.get("class"):
-            qrz_info["class"] = v
-            break
-
-    return qrz_info
 
 
 ######################################################################
@@ -142,6 +95,7 @@ def lookup(callsign):
 def choose_qsl():
     qso = request.form.to_dict()
 
+    thumbnail_check()
     backdrops = get_backdrop_images()
 
     return render_template(
