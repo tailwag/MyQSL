@@ -15,6 +15,7 @@ I've only tested this on Linux. No idea if it runs on Windows or MacOS
 **System Packages:**
  - Python 3.12 or higher
  - ImageMagick
+   
 **Python Libraries:**
  - Flask - [https://pypi.org/project/Flask/](https://pypi.org/project/Flask/)
  - Wand - [https://pypi.org/project/Wand/](https://pypi.org/project/Wand/)
