@@ -71,7 +71,9 @@
 
         <!-- Preserve QSO data -->
         {% for k, v in qso.items() %}
-            <input type="hidden" name="{{ k }}" value="{{ v }}">
+            {% if not k == "__hidden_email" %}
+                <input type="hidden" name="{{ k }}" value="{{ v }}">
+            {% endif %}
         {% endfor %}
 
         <h5 class="mb-3">Select a card background</h5>
