@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <MyQSLConfig>
     <Settings>
+        <QSOHistory>20</QSOHistory>
         <Database>
             <Handler>sqlite3</Handler>
             <DBPath>./resource/MyQSL.db</DBPath>

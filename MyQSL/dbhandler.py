@@ -104,11 +104,12 @@ def fetch_qsos():
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
-    rows = cur.execute("""
-        SELECT *
-        FROM qsos
-        ORDER BY created_at DESC
-    """).fetchall()
+    history = get_config("Settings/QSOHistory")
+
+    rows = cur.execute(
+        "SELECT * FROM qsos ORDER BY created_at DESC LIMIT ?",
+        (history,)
+    ).fetchall()
 
     conn.close()
     return rows
