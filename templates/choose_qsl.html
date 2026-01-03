@@ -5,43 +5,7 @@
     <title>Choose QSL Card</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <style>
-        body {
-            background-color: var(--bs-body-bg);
-            color: var(--bs-body-color);
-        }
-
-        [data-bs-theme="dark"] .backdrop-option {
-            background-color: #1a1a1a;
-            border-color: #2a2a2a;
-        }
-
-        [data-bs-theme="dark"] .alert-secondary {
-            background-color: #1f1f1f;
-            border-color: #2a2a2a;
-        }
-        .backdrop-option {
-            cursor: pointer;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            padding: 4px;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            background-color: #fff;
-        }
-
-        .backdrop-option:hover {
-            border-color: #adb5bd;
-        }
-
-        input[type="radio"]:checked + .backdrop-option {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
-        }
-        .qso-summary {
-            font-family: "JetBrainsMono Nerd Font", monospace;
-            font-size: 0.95rem;
-        }
-    </style>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet"/>
 </head>
 <body class="container py-4" data-bs-theme="auto">
     <div class="d-flex justify-content-end mb-3">
