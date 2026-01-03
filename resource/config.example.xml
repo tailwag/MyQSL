@@ -1,14 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <MyQSLConfig>
     <Settings>
+        <Database>
+            <Handler>sqlite3</Handler>
+            <DBPath>./resource/MyQSL.db</DBPath>
+            <!--
+            <Handler>MySQL</Handler>
+            <Host>127.0.0.1:3306</Host>
+            <User>DB_USER</User>
+            <Pass>DB_PASS</Pass>
+            -->
+        </Database>
         <QSLCard>
-            <EmailSubject>EMAIL SUBJECT HERE</EmailSubject>
-            <EmailBody>EMAIL BODY HERE</EmailBody>
+            <EmailSubject>QSL card from CALLSIGN</EmailSubject>
+            <EmailBody>It was a pleasure connecting with you earlier. Please find the attached card. 73!</EmailBody>
             <BackdropPath>./resource/img/backdrops/</BackdropPath>
             <ThumbnailPath>./static/img/backdrops/</ThumbnailPath>
             <CardOutput>./static/img/</CardOutput>
             <OverlayImage>./resource/img/Overlay.png</OverlayImage>
             <IconPath>./resource/img/icon.png</IconPath>
+
+            <!-- the text that gets drawn onto the overlay image -->
             <QSODetails>
                 <RowSpace>70</RowSpace>
                 <Col1Left>170</Col1Left>
@@ -20,14 +32,53 @@
                 <MarginRight>120</MarginRight>
             </Icon>
             <Message>
-                <Text>73s from Michigan!</Text>
+                <Text>73s from STATE!</Text>
                 <Left>120</Left>
                 <Base>100</Base>
             </Message>
         </QSLCard>
+
+        <!-- options that show up in the band dropdown -->
+        <Bands>2200m,630m,160m,80m,60m,40m,30m,20m,17m,15m,12m,10m,6m,2m,1.25m,70cm,33cm,23cm</Bands>
+
+        <!-- frequency range for each band in MHz
+             used for auto band selection when frequency is input first -->
+        <FreqRange>
+            <Band2200m>0.1357-0.1378</Band2200m>
+            <Band630m>0.472-0.479</Band630m>
+            <Band160m>1.800-2.000</Band160m>
+            <Band80m>3.500-4.000</Band80m>
+            <Band60m>5.330-5.410</Band60m>
+            <Band40m>7.000-7.300</Band40m>
+            <Band30m>10.100-10.150</Band30m>
+            <Band20m>14.000-14.350</Band20m>
+            <Band17m>18.068-18.168</Band17m>
+            <Band15m>21.000-21.450</Band15m>
+            <Band12m>24.890-24.990</Band12m>
+            <Band10m>28.000-29.700</Band10m>
+            <Band6m>50.000-54.000</Band6m>
+            <Band2m>144.0-148.0</Band2m>
+            <Band1.25m>219.0-225.0</Band1.25m>
+            <Band70cm>420.0-450.0</Band70cm>
+            <Band33cm>902.0-928.0</Band33cm>
+            <Band23cm>1240.0-1300.0</Band23cm>
+        </FreqRange>
+
+        <!-- quick band selection buttons that show up next to the band dropdown -->
         <QuickBand>80m,40m,30m,20m,17m,15m,12m,10m</QuickBand>
-        <QuickMode>SSB,FT8,FT4</QuickMode>
+
+        <!-- quick mode selection buttons that show up next to the mode field -->
+        <QuickMode>FM,AM,SSB,FT8,FT4</QuickMode>
+
+        <!-- used to set frequencies when a mode is selected.
+             if the current frequency was manually entered by
+             the user, and that frequency is inside the selected
+             band, then it will not be overwritten -->
         <QuickFreq>
+            <FM>
+                <Band2m>144.000</Band2m>
+                <Band70cm>420.000</Band70cm>
+            </FM>
             <SSB>
                 <Band80m>3.600</Band80m>
                 <Band40m>7.125</Band40m> 
@@ -63,18 +114,18 @@
     </Settings>
     <O365>
         <Credentials>
-            <client_id>YOUR CLIENT ID HERE</client_id>
-            <tenant_id>YOUR TENANT ID HERE</tenant_id>
-            <client_secret_value>YOUR SECRET VALUE HERE</client_secret_value>
-            <client_secret>YOUR CLIENT SECRET HERE</client_secret>
-            <email>YOUR EMAIL HERE</email>
+            <ClientID>YOUR_CLIENT_ID</ClientID>
+            <TenantID>YOUR_TENANT_ID</TenantID>
+            <SecretValue>YOUR_SECRET_VALUE</SecretValue>
+            <ClientSecret>YOUR_CLIENT_SECRET</ClientSecret>
+            <Email>YOUR_EMAIL</Email>
         </Credentials>
     </O365>
     <QRZ>
         <Credentials>
-            <Callsign>YOUR CALLSIGN HERE</Callsign>
-            <Password>YOUR PASSWORD HERE</Password>
-            <APIKey>YOUR API KEY HERE</APIKey>
+            <Callsign>YOUR_CALLSIGN</Callsign>
+            <Password>YOUR_PASSWORD</Password>
+            <APIKey>YOUR_API_KEY</APIKey>
         </Credentials>
     </QRZ>
 </MyQSLConfig>
