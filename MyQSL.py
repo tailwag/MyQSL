@@ -12,6 +12,7 @@ from MyQSL.CardGen import genCard
 from MyQSL.O365_Send import sendMessage
 from MyQSL.thumbnail import thumbnail_check
 from MyQSL.QRZ import QRZClient, expand_class
+from MyQSL.dbhandler import add_to_queue, fetch_qsos
 from MyQSL.config import get_config, build_freq_range, build_quick_freq, get_backdrop_images
 
 qrz = QRZClient()
@@ -45,7 +46,11 @@ def index():
         callsign = request.form.get("callsign", "").upper()
         if callsign:
             return redirect(url_for("lookup", callsign=callsign))
-    return render_template("index.html")
+
+    return render_template(
+        "index.html",
+        qsolog=fetch_qsos()
+    )
 
 
 # Lookup and QSL page
@@ -153,6 +158,7 @@ def confirm_qsl():
     qso["Freq"] = adjusted_freq
     if hiddenKeys.get('log_qso') == "yes":
         qrz.log_qso(qso)
+        add_to_queue(qso)
 
     flash("QSO processed successfully", "success")
     return redirect(url_for("index", callsign=qso["With"]))

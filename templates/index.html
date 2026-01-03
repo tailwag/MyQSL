@@ -62,6 +62,42 @@
             </div>
         </form>
     </div>
+    <div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Callsign</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Band</th>
+                    <th scope="col">Mode</th>
+                    <th scope="col">Freq</th>
+                    <th scope="col">RSTS</th>
+                    <th scope="col">RSTR</th>
+                    <th scope="col">Card Status</th>
+                    <th scope="col">QRZ Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for qso in qsolog %}
+                <tr>
+                    <th scope="row">{{ qso[0] }}</th>
+                    <td>{{ qso.callsign }}</td>
+                    <td>{{ qso.qso_date }}</td>
+                    <td>{{ qso.time_on }}</td>
+                    <td>{{ qso.band }}</td>
+                    <td>{{ qso.mode }}</td>
+                    <td>{{ qso.freq }}</td>
+                    <td>{{ qso.rsts }}</td>
+                    <td>{{ qso.rstr }}</td>
+                    <td>{{ qso.qsl_path }}</td>
+                    <td>{{ qso.qrz_status }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </body>
 <script>
     (function () {
