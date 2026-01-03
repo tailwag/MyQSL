@@ -135,7 +135,6 @@ document.getElementById('callsign-form').addEventListener('submit', function(e) 
 });
 
 setUTCDate();
-setQuickFreq();
 setFreqLabel();
 setFreqPrecision();
 
