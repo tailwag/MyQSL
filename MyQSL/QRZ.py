@@ -6,6 +6,9 @@ from datetime import datetime, timedelta, timezone
 
 from MyQSL.config import get_config
 
+user_api = get_config("QRZ/UserAPI")
+logbook_api = get_config("QRZ/LogbookAPI")
+
 NS = {"qrz": "http://xmldata.qrz.com"}
 
 
@@ -24,9 +27,8 @@ class QRZClient:
 
     def login(self):
         """Login to QRZ and store session key"""
-        url = "https://xmldata.qrz.com/xml/current/"
         params = {"username": self.username, "password": self.password}
-        r = requests.get(url, params=params, timeout=10)
+        r = requests.get(user_api, params=params, timeout=10)
         r.raise_for_status()
 
         root = ET.fromstring(r.text)
@@ -52,9 +54,8 @@ class QRZClient:
 
     def lookup(self, callsign):
         key = self.get_session_key()
-        url = "https://xmldata.qrz.com/xml/current/"
         params = {"s": key, "callsign": callsign}
-        r = requests.get(url, params=params, timeout=10)
+        r = requests.get(user_api, params=params, timeout=10)
         r.raise_for_status()
 
         root = ET.fromstring(r.text)
@@ -76,8 +77,6 @@ class QRZClient:
         }
 
     def lookup_qso_history(self, callsign):
-        url = "https://logbook.qrz.com/api"
-
         callsign = callsign.strip().upper()
 
         payload = {
@@ -88,7 +87,7 @@ class QRZClient:
         }
 
         r = requests.post(
-            url,
+            logbook_api,
             auth=(self.username, self.password),
             data=payload,
             timeout=10
@@ -176,8 +175,6 @@ class QRZClient:
         return "\n".join(adif_lines)
 
     def log_qso(self, qso):
-        url = "https://logbook.qrz.com/api"
-
         adif_data = self.build_adif_qso(qso)
 
         payload = {
@@ -188,7 +185,7 @@ class QRZClient:
         }
 
         r = requests.post(
-            url,
+            logbook_api,
             auth=(self.username, self.password),
             data=payload,
             timeout=10

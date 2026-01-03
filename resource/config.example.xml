@@ -122,6 +122,8 @@
         </Credentials>
     </O365>
     <QRZ>
+        <UserAPI>https://xmldata.qrz.com/xml/current</UserAPI>
+        <LogbookAPI>https://logbook.qrz.com/api</LogbookAPI>
         <Credentials>
             <Callsign>YOUR_CALLSIGN</Callsign>
             <Password>YOUR_PASSWORD</Password>
