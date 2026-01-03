@@ -12,7 +12,7 @@ from MyQSL.CardGen import genCard
 from MyQSL.O365_Send import sendMessage
 from MyQSL.thumbnail import thumbnail_check
 from MyQSL.QRZ import QRZClient, expand_class
-from MyQSL.config import get_config, build_quick_freqs, get_backdrop_images
+from MyQSL.config import get_config, build_freq_range, build_quick_freq, get_backdrop_images
 
 qrz = QRZClient()
 
@@ -72,20 +72,24 @@ def lookup(callsign):
 
     qslInfo["With"] = callsign
 
+    bands = get_config("Settings/Bands").split(",")
     quickband = get_config("Settings/QuickBand").split(",")
     quickmode = get_config("Settings/QuickMode").split(",")
     quickrsts = get_config("Settings/QuickRSTS").split(",")
     quickrstr = get_config("Settings/QuickRSTR").split(",")
-    quickfreq = build_quick_freqs(get_config("Settings/QuickFreq"))
+    quickfreq = build_quick_freq(get_config("Settings/QuickFreq"))
+    freqrange = build_freq_range(get_config("Settings/FreqRange"))
 
     return render_template(
         "lookup.html",
         qrz_info=qrz_info,
+        bands=bands,
         quickband=quickband,
         quickmode=quickmode,
         quickrsts=quickrsts,
         quickrstr=quickrstr,
         quickfreq=quickfreq,
+        freqrange=freqrange,
         qso_history=qso_history,
         qslInfo=qslInfo
     )

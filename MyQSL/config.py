@@ -37,7 +37,18 @@ def get_config(path, required=True):
     return current_level
 
 
-def build_quick_freqs(quickfreq_xml):
+def build_freq_range(freqrange_xml):
+    out = {}
+
+    for band, range in freqrange_xml.items():
+        band = band.replace("Band", "")
+
+        out[band] = range.split("-")
+
+    return out
+
+
+def build_quick_freq(quickfreq_xml):
     out = {}
 
     for mode, bands in quickfreq_xml.items():

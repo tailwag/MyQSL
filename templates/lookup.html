@@ -120,7 +120,7 @@
                                     <!-- Dropdown -->
                                     <select class="form-select" name="Band" id="bandSelect">
                                         <option value="">Select band</option>
-                                        {% for b in ['2200m','630m','160m','80m','60m','40m','30m','20m','17m','15m','12m','10m','6m','2m','1.25m','70cm','33cm','23cm'] %}
+                                        {% for b in bands %}
                                             <option value="{{ b }}" {% if qslInfo.Band == b %}selected{% endif %}>
                                                 {{ b }}
                                             </option>
@@ -212,6 +212,9 @@
 </body>
    <script>
         const quickFreqs = {{ quickfreq | tojson }};
+        const freqRange = {{ freqrange | tojson }};
+
+        var frequencyAdjusted = false;
 
         // Auto-populate date in UTC if empty
         function setUTCDate() {
@@ -219,6 +222,13 @@
             const utc = now.toISOString().replace("T", " ").substring(0,16).replace(":", "") + " UTC";
             const field = document.getElementById("dateField");
             if (!field.value) field.value = utc;
+        }
+
+        function setBand(band) {
+            const select = document.getElementById('bandSelect');
+            select.value = band;
+
+            select.dispatchEvent(new Event('change'));
         }
 
         // Mode buttons
@@ -239,34 +249,98 @@
 
         // Auto-set FT8 frequency if band is selected
         function setQuickFreq() {
-            const band = document.getElementById("bandSelect").value;
-            const mode = document.getElementById("modeField").value;
-            const freq = quickFreqs[mode]?.[band];
-            if (freq) {
-                document.getElementById("freqField").value = freq;
+            if (frequencyAdjusted === false || isFreqInBand() === false) {
+                const band = document.getElementById("bandSelect").value;
+                const mode = document.getElementById("modeField").value;
+                const freq = quickFreqs[mode]?.[band];
+                if (freq) {
+                    document.getElementById("freqField").value = freq;
+                    setFreqPrecision();
+                }
+                frequencyAdjusted = false;
+            }
+        }
+
+        function getAbsFreq() {
+            const freq = document.getElementById("freqField").value;
+            const prefix = document.getElementById("fpLabel").innerText;
+
+            var absFrq = parseFloat(freq) * 1000.0;
+            if (prefix === "MHz")
+                absFrq = absFrq * 1000.0;
+
+            return absFrq;
+        }
+
+        function setFreqPrecision() {
+            const freq = parseFloat(document.getElementById("freqField").value);
+
+            var frmtFreq = freq.toFixed(3);
+
+            console.log(frmtFreq);
+            if (freq > parseFloat(frmtFreq)) {
+                frmtFreq = freq;
+                console.log("hi");
+            }
+
+            document.getElementById("freqField").value = frmtFreq;
+        }
+
+        function isFreqInBand() {
+            const absFrq = getAbsFreq();
+            const currentBand = document.getElementById("bandSelect").value;
+
+            const min = parseFloat(freqRange[currentBand][0]) * 1000000.0;
+            const max = parseFloat(freqRange[currentBand][1]) * 1000000.0;
+
+            if (absFrq >= min && absFrq <= max)
+                return true;
+
+            return false;
+        }
+
+        function setBandFromFreq() {
+            const absFrq = getAbsFreq();
+
+            for (const [k, v] of Object.entries(freqRange)) {
+                min = parseFloat(v[0]) * 1000000.0;
+                max = parseFloat(v[1]) * 1000000.0;
+
+                if (absFrq >= min && absFrq <= max) {
+                    document.getElementById("bandSelect").value = k;
+                    setFreqLabel();
+                    setFreqPrecision();
+                    break;
+                }
             }
         }
 
         function setFreqLabel() {
             const band = document.getElementById("bandSelect").value;
+            const freq = document.getElementById("freqField").value;
+            const prefix = document.getElementById("fpLabel").innerText;
+            var absFrq = getAbsFreq();
 
-            var fpText = "MHz";
+            newPrefix = "MHz";
 
             if (band === "630m" || band === "2200m") {
-                fpText = "KHz";
+                newPrefix = "KHz";
+            }
+            else {
+                absFrq = absFrq / 1000.0;
             }
 
-            document.getElementById("fpValue").value = fpText;
-            document.getElementById("fpLabel").innerText = fpText;
+            document.getElementById("fpValue").value = newPrefix;
+            document.getElementById("fpLabel").innerText = newPrefix;
+            document.getElementById("freqField").value = absFrq / 1000.0;
         }
 
         document.getElementById("bandSelect").addEventListener("change", setQuickFreq);
         document.getElementById("bandSelect").addEventListener("change", setFreqLabel);
-
-        setUTCDate();
-        setQuickFreq();
-        setFreqLabel();
-
+        document.getElementById("bandSelect").addEventListener("change", setFreqPrecision);
+        document.getElementById("freqField").addEventListener("change", setBandFromFreq);
+        document.getElementById("freqField").addEventListener("change", setFreqPrecision);
+        document.getElementById("freqField").addEventListener("change", function() { frequencyAdjusted = true; })
         document.getElementById('callsign-form').addEventListener('submit', function(e) {
             e.preventDefault();  // prevent actual form submission
             const callsign = document.getElementById('callsign-input').value.trim().toUpperCase();
@@ -276,19 +350,10 @@
             }
         });
 
-
-        function setBand(band) {
-            const select = document.getElementById('bandSelect');
-            select.value = band;
-
-            // Update active button styling
-            document.querySelectorAll('.band-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent === band);
-            });
-
-            // Trigger change event (useful for FT8 auto-frequency logic)
-            select.dispatchEvent(new Event('change'));
-        }
+        setUTCDate();
+        setQuickFreq();
+        setFreqLabel();
+        setFreqPrecision();
 
         (function () {
             const toggleBtn = document.getElementById("themeToggle");
