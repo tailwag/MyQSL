@@ -10,7 +10,7 @@ def init_db(db_path=db_path):
     cur = conn.cursor()
 
     cur.executescript("""
-    CREATE TABLE IF NOT EXISTS qso_queue (
+    CREATE TABLE IF NOT EXISTS qsos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         callsign TEXT NOT NULL,
         qso_date TEXT NOT NULL,
@@ -20,18 +20,22 @@ def init_db(db_path=db_path):
         freq TEXT,
         rsts TEXT,
         rstr TEXT,
-        qsl_requested INTEGER NOT NULL DEFAULT 0,
-        qsl_generated INTEGER NOT NULL DEFAULT 0,
-        qsl_sent INTEGER NOT NULL DEFAULT 0,
-        qsl_backdrop TEXT,
-        qsl_path TEXT,
-        qsl_email TEXT,
-        qrz_status TEXT NOT NULL DEFAULT 'Pending',
-        qrz_error TEXT,
         payload_json TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS jobs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        qso_id INTEGER NOT NULL,
+        job_type TEXT NOT NULL, -- 'QSL_GEN', 'QSL_SEND', 'QRZ_LOG'
+        status TEXT NOT NULL DEFAULT 'pending', -- pending, running, done, failed
+        attempts INTEGER NOT NULL DEFAULT 0,
+        max_attempts INTEGER NOT NULL DEFAULT 5,
+        last_error TEXT,
+        payload_json TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        qsl_sent_at DATETIME,
-        qrz_logged_at DATETIME
+        updated_at DATETIME,
+
+        FOREIGN KEY (qso_id) REFERENCES qsos(id)
     );
     """)
 
@@ -42,33 +46,55 @@ def init_db(db_path=db_path):
 if not os.path.isfile(db_path):
     init_db()
 
-
-def add_to_queue(qso):
+def add_qso(qso):
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
 
-    print(qso)
     cur.execute(
         """
-        INSERT INTO qso_queue (
+        INSERT INTO qsos (
             callsign, qso_date, time_on, band, mode,
-            freq, rsts, rstr, qsl_email, payload_json
+            freq, rsts, rstr, payload_json
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             qso["With"],
-            qso["Date"][0:10],
-            qso["Date"][10:],
-            qso["Band"],
-            qso["Mode"],
-            qso["Freq"],
-            qso["RSTS"],
-            qso["RSTR"],
-            qso.get("email"),
+            qso["Date"][:10],
+            qso["Date"][11:],
+            qso.get("Band"),
+            qso.get("Mode"),
+            qso.get("Freq"),
+            qso.get("RSTS"),
+            qso.get("RSTR"),
             json.dumps(qso),
         )
     )
+
+    qso_id = cur.lastrowid
+    conn.commit()
+    conn.close()
+    return qso_id
+
+
+def add_job(qso_id, job_type, payload=None):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        INSERT INTO jobs (
+            qso_id, job_type, payload_json
+        )
+        VALUES (?, ?, ?)
+        """,
+        (
+            qso_id,
+            job_type,
+            json.dumps(payload) if payload else None
+        )
+    )
+
     conn.commit()
     conn.close()
 
@@ -78,11 +104,125 @@ def fetch_qsos():
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
-    ret = cur.execute(
-        """
-        SELECT * FROM qso_queue ORDER BY created_at DESC
-        """
-    ).fetchall()
+    rows = cur.execute("""
+        SELECT *
+        FROM qsos
+        ORDER BY created_at DESC
+    """).fetchall()
 
     conn.close()
-    return ret
+    return rows
+
+
+def fetch_next_job():
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    job = cur.execute(
+        """
+        SELECT * FROM jobs
+        WHERE status = 'pending'
+        ORDER BY created_at
+        LIMIT 1
+        """
+    ).fetchone()
+
+    if not job:
+        conn.close()
+        return None
+
+    cur.execute(
+        """
+        UPDATE jobs
+        SET status='running', attempts=attempts+1, updated_at=CURRENT_TIMESTAMP
+        WHERE id=? AND status='pending'
+        """,
+        (job["id"],)
+    )
+
+    if cur.rowcount == 0:
+        conn.close()
+        return None
+
+    conn.commit()
+    conn.close()
+    return dict(job)
+
+
+def get_qso_by_id(qso_id):
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    row = cur.execute(
+        "SELECT * FROM qsos WHERE id=?",
+        (qso_id,)
+    ).fetchone()
+
+    conn.close()
+    return dict(row)
+
+
+def mark_job_done(job_id):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        UPDATE jobs
+        SET status='done', updated_at=CURRENT_TIMESTAMP
+        WHERE id=?
+        """,
+        (job_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def mark_job_failed(job_id, error):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        UPDATE jobs
+        SET status='failed',
+            last_error=?,
+            updated_at=CURRENT_TIMESTAMP
+        WHERE id=?
+        """,
+        (error[:500], job_id)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def update_job_status(job_id, status, last_error=None, payload_json=None):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE jobs
+        SET status=?, last_error=?, payload_json=?, updated_at=CURRENT_TIMESTAMP
+        WHERE id=?
+    """, (status, last_error, payload_json, job_id))
+    conn.commit()
+    conn.close()
+
+
+def get_gen_job(qso_id):
+    gen_job = None
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM jobs
+        WHERE qso_id=? AND job_type='QSL_GEN' AND status='done'
+        ORDER BY created_at DESC
+        LIMIT 1
+    """, (qso_id,))
+    gen_job = cur.fetchone()
+    conn.close()
+    return gen_job

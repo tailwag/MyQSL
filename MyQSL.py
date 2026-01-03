@@ -12,7 +12,11 @@ from MyQSL.CardGen import genCard
 from MyQSL.O365_Send import sendMessage
 from MyQSL.thumbnail import thumbnail_check
 from MyQSL.QRZ import QRZClient, expand_class
-from MyQSL.dbhandler import add_to_queue, fetch_qsos
+from MyQSL.dbhandler import (
+    add_qso,
+    add_job,
+    fetch_qsos
+)
 from MyQSL.config import get_config, build_freq_range, build_quick_freq, get_backdrop_images
 
 qrz = QRZClient()
@@ -142,23 +146,23 @@ def confirm_qsl():
 
     qso["Freq"] = original_freq + hiddenKeys['frequency_prefix']
 
-    # generate QSL card using selected background
-    card_path = None
-    if hiddenKeys['backdrop'] and hiddenKeys['backdrop'] != "none":
-        card_path = genCard(qso, get_config("Settings/QSLCard/BackdropPath") + hiddenKeys['backdrop'])
+    # add qso to local database and get ID
+    qso_id = add_qso(qso)
 
-    if hiddenKeys.get('send_qsl') == "yes" and card_path:
-        sendMessage(
-            hiddenKeys['email'],
-            get_config("Settings/QSLCard/EmailSubject"),
-            get_config("Settings/QSLCard/EmailBody"),
-            card_path
-        )
+    # generate QSL card using selected background
+    if hiddenKeys.get("backdrop") != "none":
+        # card_path = genCard(qso, get_config("Settings/QSLCard/BackdropPath") + hiddenKeys['backdrop'])
+        add_job(qso_id, "QSL_GEN", {
+            "backdrop": hiddenKeys.get("backdrop"),
+            "email": hiddenKeys.get("email")
+        })
+
+    if hiddenKeys.get('send_qsl') == "yes":
+        add_job(qso_id, "QSL_SEND")
 
     qso["Freq"] = adjusted_freq
     if hiddenKeys.get('log_qso') == "yes":
-        qrz.log_qso(qso)
-        add_to_queue(qso)
+        add_job(qso_id, "QRZ_LOG")
 
     flash("QSO processed successfully", "success")
     return redirect(url_for("index", callsign=qso["With"]))
