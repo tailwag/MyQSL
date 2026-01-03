@@ -15,7 +15,8 @@ from MyQSL.QRZ import QRZClient, expand_class
 from MyQSL.dbhandler import (
     add_qso,
     add_job,
-    fetch_qsos
+    fetch_qsos,
+    get_job_status
 )
 from MyQSL.config import get_config, build_freq_range, build_quick_freq, get_backdrop_images
 
@@ -40,6 +41,37 @@ def format_mhz(freq_str: str) -> str:
     return freq_str + "MHz"
 
 
+def qsl_status_text(qsl_gen_status, qsl_send_status):
+    if qsl_gen_status == "failed":
+        return "Couldn't Generate Card"
+
+    if qsl_gen_status in ("pending", "running"):
+        return "Creating"
+
+    if qsl_gen_status == "done":
+        if qsl_send_status is None:
+            return "Created"
+        if qsl_send_status == "failed":
+            return "Send Failed!"
+        if qsl_send_status in ("pending", "running"):
+            return "Sending…"
+        if qsl_send_status == "done":
+            return "Sent"
+
+    return "Unknown"
+
+
+def qrz_status_text(qrz_log_status):
+    if qrz_log_status == "failed":
+        return "Failed"
+
+    if qrz_log_status in ("pending", "running"):
+        return "Uploading"
+
+    if qrz_log_status == "done":
+        return "Logged"
+
+
 ######################################################################
 # Flask routes                                                       #
 ######################################################################
@@ -51,9 +83,25 @@ def index():
         if callsign:
             return redirect(url_for("lookup", callsign=callsign))
 
+    qsos = fetch_qsos()
+
+    qso_dicts = []
+
+    for qso in qsos:
+        qsl_gen_status = get_job_status(qso["id"], "QSL_GEN")
+        qsl_send_status = get_job_status(qso["id"], "QSL_SEND")
+        qrz_log_status = get_job_status(qso["id"], "QRZ_LOG")
+
+        row = dict(qso)
+
+        row["qsl_status"] = qsl_status_text(qsl_gen_status, qsl_send_status)
+        row["qrz_status"] = qrz_status_text(qrz_log_status)
+
+        qso_dicts.append(row)
+
     return render_template(
         "index.html",
-        qsolog=fetch_qsos()
+        qsolog=qso_dicts
     )
 
 

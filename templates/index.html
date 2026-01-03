@@ -32,7 +32,7 @@
     <div class="search-container">
         <form method="post" class="w-50">
             <div class="input-group">
-                <input type="text" name="callsign" class="form-control" placeholder="Enter callsign..." required>
+                <input id="callsign-search" type="text" name="callsign" class="form-control" placeholder="Enter callsign..." required>
                 <button class="btn btn-primary" type="submit">Search</button>
             </div>
         </form>
@@ -57,7 +57,7 @@
             <tbody>
             {% for qso in qsolog %}
                 <tr>
-                    <th scope="row">{{ qso[0] }}</th>
+                    <th scope="row">{{ qso.id }}</th>
                     <td>{{ qso.callsign }}</td>
                     <td>{{ qso.qso_date }}</td>
                     <td>{{ qso.time_on }}</td>
@@ -66,10 +66,10 @@
                     <td>{{ qso.freq }}</td>
                     <td>{{ qso.rsts }}</td>
                     <td>{{ qso.rstr }}</td>
-                    <td>{{ qso.qsl_path }}</td>
+                    <td>{{ qso.qsl_status }}</td>
                     <td>{{ qso.qrz_status }}</td>
-                </tr>
             {% endfor %}
+                </tr>
             </tbody>
         </table>
     </div>

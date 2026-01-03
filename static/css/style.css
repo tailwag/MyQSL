@@ -13,12 +13,12 @@ body {
     border-color: #2a2a2a;
 }
 .search-container {
-    height: 100vh;
+    height: 15vh;
     display: flex;
     justify-content: center;
     align-items: center;
 }
-input[type="text"] {
+input[type="text"]#callsign-search {
     font-size: 2rem;
     padding: 0.5rem 1rem;
 }

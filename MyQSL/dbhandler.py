@@ -114,6 +114,7 @@ def fetch_qsos():
     return rows
 
 
+
 def fetch_next_job():
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
@@ -210,6 +211,19 @@ def update_job_status(job_id, status, last_error=None, payload_json=None):
     """, (status, last_error, payload_json, job_id))
     conn.commit()
     conn.close()
+
+
+def get_job_status(qso_id, job_type):
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    row = cur.execute(
+        "SELECT status FROM jobs WHERE qso_id=? AND job_type=?",
+        (qso_id, job_type)
+    ).fetchone()
+
+    return row["status"] if row else None
 
 
 def get_gen_job(qso_id):
