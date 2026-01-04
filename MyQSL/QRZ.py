@@ -76,16 +76,8 @@ class QRZClient:
             "grid": call.findtext("qrz:grid", namespaces=NS),
         }
 
-    def lookup_qso_history(self, callsign):
-        callsign = callsign.strip().upper()
 
-        payload = {
-            "KEY": self.apikey,
-            "ACTION": "FETCH",
-            "OPTION": "CALL:"+callsign,
-            "MAX": 5
-        }
-
+    def __interface_lookup(self, payload):
         r = requests.post(
             logbook_api,
             auth=(self.username, self.password),
@@ -107,7 +99,78 @@ class QRZClient:
             return ""
 
         adif = match.group(1)
+
         return adif
+
+
+    def get_qso_id(self, qso):
+        callsign = self.username
+        date = qso.get("Date")[:10]
+        time = qso.get("Date")[11:15]
+
+        options = {
+            "CALL": qso.get("With"),
+            "BETWEEN": date + "+" + date,
+            "BAND": qso.get("Band").strip(),
+            "MODE": qso.get("Mode").strip(),
+        }
+
+        option_string = ""
+        for k, v in options.items():
+            option_string = option_string + k + ":" + v + ","
+
+        option_string = option_string[:-1]
+
+        payload = {
+            "KEY": self.apikey,
+            "ACTION": "FETCH",
+            "OPTION": option_string,
+            "MAX": 5
+        }
+
+        adif = self.__interface_lookup(payload)
+
+        for record in self.parse_adif_records(adif):
+            if record.get("TIME_OFF") == time:
+                return record.get("APP_QRZLOG_LOGID")
+
+        return None
+
+    def lookup_qso_history(self, callsign):
+        callsign = callsign.strip().upper()
+
+        payload = {
+            "KEY": self.apikey,
+            "ACTION": "FETCH",
+            "OPTION": "CALL:"+callsign,
+            "MAX": 5
+        }
+
+        adif = self.__interface_lookup(payload)
+
+        return adif
+
+    def delete_log_by_id(self, logbook_id):
+        payload = {
+            "KEY": self.apikey,
+            "ACTION": "DELETE",
+            "LOGIDS": logbook_id
+        }
+
+        r = requests.post(
+            logbook_api,
+            auth=(self.username, self.password),
+            data=payload,
+            timeout=10
+        )
+
+        r.raise_for_status()
+        # QRZ returns a query string like: STATUS=OK&LOGID=12345
+        response_text = r.text
+        if "RESULT=OK" not in response_text:
+            raise RuntimeError(f"QRZ rejected deletion: {response_text}")
+
+        return response_text
 
     def parse_adif_records(self, adif_text):
         records = []

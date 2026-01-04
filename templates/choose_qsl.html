@@ -181,7 +181,11 @@
                 id="sendQsl"
             >
             <label class="form-check-label" for="sendQsl">
+                {% if qso.__hidden_qso_id %}
+                Re-issue QSL Card
+                {% else %}
                 Send QSL card
+                {% endif %}
             </label>
         </div>
         <div class="form-check">
@@ -194,7 +198,11 @@
                 checked
             >
             <label class="form-check-label" for="logQso">
+                {% if qso.__hidden_qso_id %}
+                Update QRZ Log
+                {% else %}
                 Log QSO to QRZ
+                {% endif %}
             </label>
         </div>
         <div class="mt-4">
