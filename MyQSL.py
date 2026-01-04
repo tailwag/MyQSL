@@ -233,43 +233,58 @@ def confirm_qsl():
 
     # extra values we need from the form, but must be
     # removed before the QSL card gets generated
-    hiddenKeys = {}
+    hidden_keys = {}
     for k, v in qso.items():
         if k[0:9] == "__hidden_":
-            hiddenKeys[k[9:]] = v
+            hidden_keys[k[9:]] = v
 
-    for i in hiddenKeys:
+    for i in hidden_keys:
         del qso['__hidden_' + i]
+
+    # only used when updating an existing qso
+    old_qso = None
+    if hidden_keys.get("qso_id") is not None:
+        old_qso = {}
+        for k, v in qso.items():
+            if k[0:9] == "__oldqso_":
+                old_qso[k[9:]] = v
+
+        for i in old_qso:
+            del qso['__oldqso_' + i]
+
 
     # deal with MyQSO / QRZ low band frequency discrepancy
     # I think most people would prefer 137KHz to be labeled as 
     # such, but QRZ expects 0.137MHz
     original_freq = qso.get('Freq')
     adjusted_freq = original_freq
-    if hiddenKeys['frequency_prefix'] == "KHz":
+    if hidden_keys['frequency_prefix'] == "KHz":
         adjusted_freq = str(float(adjusted_freq) / 1000.0)
 
-    qso["Freq"] = original_freq + hiddenKeys['frequency_prefix']
+    qso["Freq"] = original_freq + hidden_keys['frequency_prefix']
 
     # add qso to local database and get ID
-    if hiddenKeys.get("qso_id") is None:
+    if hidden_keys.get("qso_id") is None:
         qso_id = add_qso(qso)
     else:
-        qso_id = update_qso(hiddenKeys.get("qso_id"), qso)
+        qso_id = update_qso(hidden_keys.get("qso_id"), qso)
 
     # generate QSL card using selected background
-    if hiddenKeys.get("backdrop") != "none":
-        # card_path = genCard(qso, get_config("Settings/QSLCard/BackdropPath") + hiddenKeys['backdrop'])
+    if hidden_keys.get("backdrop") != "none":
         add_job(qso_id, "QSL_GEN", {
-            "backdrop": hiddenKeys.get("backdrop"),
-            "email": hiddenKeys.get("email")
+            "backdrop": hidden_keys.get("backdrop"),
+            "email": hidden_keys.get("email")
         })
 
-    if hiddenKeys.get('send_qsl') == "yes":
+    if hidden_keys.get('send_qsl') == "yes":
         add_job(qso_id, "QSL_SEND")
 
     qso["Freq"] = adjusted_freq
-    if hiddenKeys.get('log_qso') == "yes":
+    if hidden_keys.get('log_qso') == "yes":
+        if old_qso is not None:
+            log_id = qrz.get_qso_id(old_qso)
+            qrz.delete_log_by_id(log_id)
+
         add_job(qso_id, "QRZ_LOG")
 
     flash("QSO processed successfully", "success")
