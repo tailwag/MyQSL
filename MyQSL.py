@@ -42,6 +42,9 @@ def format_mhz(freq_str: str) -> str:
 
 
 def qsl_status_text(qsl_gen_status, qsl_send_status):
+    if qsl_gen_status is None:
+        return "None"
+
     if qsl_gen_status == "failed":
         return "Couldn't Generate Card"
 
@@ -62,6 +65,9 @@ def qsl_status_text(qsl_gen_status, qsl_send_status):
 
 
 def qrz_status_text(qrz_log_status):
+    if qrz_log_status is None:
+        return "None"
+
     if qrz_log_status == "failed":
         return "Failed"
 
@@ -214,6 +220,39 @@ def confirm_qsl():
 
     flash("QSO processed successfully", "success")
     return redirect(url_for("index", callsign=qso["With"]))
+
+
+@app.route("/API/v1", methods=["POST"])
+def api():
+    form = request.form.to_dict()
+
+    if form.get("ACTION") == "get_status":
+        item = form.get("ITEM")
+        id = form.get("QSOID")
+
+        if item not in ("QSL", "QRZ"):
+            return ("Invalid item!", 400)
+
+        if id is None:
+            return ("Invalid QSO ID!", 400)
+
+        if item == "QSL":
+            return (
+                qsl_status_text(
+                    get_job_status(id, "QSL_GEN"),
+                    get_job_status(id, "QSL_SEND")
+                ),
+                200
+            )
+        elif item == "QRZ":
+            job_status = get_job_status(id, "QRZ_LOG")
+            if job_status is None:
+                return ("None", 200)
+
+            return (qrz_status_text(job_status), 200)
+
+    return ("Invalid request", 400)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
