@@ -89,6 +89,9 @@
                     <div class="card-body">
                         <h4>QSL Entry</h4>
                         <form method="post" action="{{ url_for('choose_qsl') }}">
+                            {% if qso_id %}
+                                <input type="hidden" name="__hidden_qso_id" value="{{ qso_id }}" />
+                            {% endif %}
                             <!-- WITH -->
                             <div class="mb-3">
                                 <label class="form-label">With</label>

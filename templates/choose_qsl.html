@@ -19,6 +19,78 @@
             🌙 Dark
         </button>
     </div>
+
+    {% if qso.__hidden_qso_id %}
+    <h2 class="mb-3">Editing QSO #{{ qso.__hidden_qso_id }}</h2>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <strong>&nbsp;Old QSO Data</strong>
+            <div class="alert alert-secondary qso-summary mb-4">
+                <strong>With: {{ old_qso.With }}</strong><br>
+                <strong>Date: {{ old_qso.Date }}</strong><br>
+                <strong>Band: {{ old_qso.Band }}</strong><br>
+                <strong>Mode: {{ old_qso.Mode }}</strong><br>
+                <strong>Freq: {{ old_qso.Freq }}{{ old_qso.__hidden_frequency_prefix }}</strong><br>
+                <strong>RSTS: {{ old_qso.RSTS }}</strong><br>
+                <strong>RSTR: {{ old_qso.RSTR }}</strong><br>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <strong>&nbsp;New QSO Data</strong>
+            <div class="alert alert-secondary qso-summary mb-4">
+                <strong>With: 
+                    {% if old_qso.With != qso.With %}
+                        <mark>{{ qso.With }}</mark>
+                    {% else %}
+                        {{ qso.With }}
+                    {% endif %}
+                </strong><br>
+                <strong>Date: 
+                    {% if old_qso.Date != qso.Date %}
+                        <mark>{{ qso.Date }}</mark>
+                    {% else %}
+                        {{ qso.Date }}
+                    {% endif %}
+                </strong><br>
+                <strong>Band: 
+                    {% if old_qso.Band != qso.Band %}
+                        <mark>{{ qso.Band }}</mark>
+                    {% else %}
+                        {{ qso.Band }}
+                    {% endif %}
+                </strong><br>
+                <strong>Mode: 
+                    {% if old_qso.Mode != qso.Mode %}
+                        <mark>{{ qso.Mode }}</mark>
+                    {% else %}
+                        {{ qso.Mode }}
+                    {% endif %}
+                </strong><br>
+                <strong>Freq: 
+                    {% if old_qso.Freq != qso.Freq %}
+                        <mark>{{ qso.Freq }}{{ qso.__hidden_frequency_prefix }}</mark>
+                    {% else %}
+                        {{ qso.Freq }}{{ qso.__hidden_frequency_prefix }}
+                    {% endif %}
+                </strong><br>
+                <strong>RSTS: 
+                    {% if old_qso.RSTS != qso.RSTS %}
+                        <mark>{{ qso.RSTS }}</mark>
+                    {% else %}
+                        {{ qso.RSTS }}
+                    {% endif %}
+                </strong><br>
+                <strong>RSTR: 
+                    {% if old_qso.RSTR != qso.RSTR %}
+                        <mark>{{ qso.RSTR }}</mark>
+                    {% else %}
+                        {{ qso.RSTR }}
+                    {% endif %}
+                </strong><br>
+            </div>
+        </div>
+    </div>
+    {% else %}
     <h2 class="mb-3">Choose QSL Card</h2>
     <!-- QSO Summary -->
     <div class="alert alert-secondary qso-summary mb-4">
@@ -30,6 +102,7 @@
         <strong>RSTS: {{ qso.RSTS }}</strong><br>
         <strong>RSTR: {{ qso.RSTR }}</strong><br>
     </div>
+    {% endif %}
 
     <form method="post" action="{{ url_for('confirm_qsl') }}">
 

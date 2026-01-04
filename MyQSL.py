@@ -209,9 +209,15 @@ def choose_qsl():
     thumbnail_check()
     backdrops = get_backdrop_images()
 
+    old_qso = None
+    old_qso_id = qso.get("__hidden_qso_id")
+    if old_qso_id is not None:
+        old_qso = json.loads(get_qso_by_id(old_qso_id).get("payload_json"))
+
     return render_template(
         "choose_qsl.html",
         qso=qso,
+        old_qso=old_qso,
         backdrops=backdrops
     )
 
