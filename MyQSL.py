@@ -15,6 +15,7 @@ from MyQSL.thumbnail import thumbnail_check
 from MyQSL.QRZ import QRZClient, expand_class
 from MyQSL.dbhandler import (
     add_qso,
+    update_qso,
     add_job,
     fetch_qsos,
     get_qso_by_id,
@@ -251,7 +252,10 @@ def confirm_qsl():
     qso["Freq"] = original_freq + hiddenKeys['frequency_prefix']
 
     # add qso to local database and get ID
-    qso_id = add_qso(qso)
+    if hiddenKeys.get("qso_id") is None:
+        qso_id = add_qso(qso)
+    else:
+        qso_id = update_qso(hiddenKeys.get("qso_id"), qso)
 
     # generate QSL card using selected background
     if hiddenKeys.get("backdrop") != "none":

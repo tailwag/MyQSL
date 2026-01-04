@@ -77,6 +77,36 @@ def add_qso(qso):
     return qso_id
 
 
+def update_qso(qso_id, qso):
+    print(qso_id)
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        UPDATE qsos SET
+            callsign=?, qso_date=?, time_on=?, band=?,
+            mode=?, freq=?, rsts=?, rstr=?, payload_json=?
+        WHERE id IS ?
+        """,
+        (
+            qso["With"],
+            qso["Date"][:10],
+            qso["Date"][11:],
+            qso.get("Band"),
+            qso.get("Mode"),
+            qso.get("Freq"),
+            qso.get("RSTS"),
+            qso.get("RSTR"),
+            json.dumps(qso),
+            qso_id,
+        )
+    )
+
+    conn.commit()
+    conn.close()
+    return qso_id
+
 def add_job(qso_id, job_type, payload=None):
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
@@ -220,7 +250,7 @@ def get_job_status(qso_id, job_type):
     cur = conn.cursor()
 
     row = cur.execute(
-        "SELECT status FROM jobs WHERE qso_id=? AND job_type=?",
+        "SELECT status FROM jobs WHERE qso_id=? AND job_type=? ORDER BY created_at DESC",
         (qso_id, job_type)
     ).fetchone()
 

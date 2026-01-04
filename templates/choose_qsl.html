@@ -105,6 +105,9 @@
     {% endif %}
 
     <form method="post" action="{{ url_for('confirm_qsl') }}">
+        {% if qso.__hidden_qso_id %}
+            <input type="hidden" name="__hidden_qso_id" value="{{ qso.__hidden_qso_id }}"/>
+        {% endif %}
 
         <!-- Preserve QSO data -->
         {% for k, v in qso.items() %}

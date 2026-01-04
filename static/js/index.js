@@ -8,6 +8,7 @@ function isTerminalStatus(text) {
     );
 }
 async function fetchStatus(cell) {
+    if (isTerminalStatus(cell.innerText)) cell.dataset.active = 0;
     if (cell.dataset.active !== "1") return;
 
     const qsoId = cell.dataset.qsoId;
@@ -41,7 +42,7 @@ async function fetchStatus(cell) {
 }
 
 function refreshStatuses() {
-    document.querySelectorAll("tbody tr:first-child .status-cell").forEach(fetchStatus);
+    document.querySelectorAll(".status-cell").forEach(fetchStatus);
 }
 
 // initial load
