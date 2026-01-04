@@ -1,24 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MyQSL Search</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+{% extends "base.html" %}
+
+{% block title %}
+    MyQSL
+{% endblock %}
+
+{% block css %}
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet"/>
-</head>
-<body class="container py-4" data-bs-theme="auto">
-    <div class="d-flex justify-content-end mb-3">
-        <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary"
-            tabindex="-1"
-            id="themeToggle"
-            aria-label="Toggle dark mode"
-        >
-            🌙 Dark
-        </button>
-    </div>
+{% endblock %}
+
+{% block content %}
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -53,6 +43,7 @@
                     <th scope="col">Card Status</th>
                     <th scope="col">QRZ Status</th>
                     <th scope="col">Actions</th>
+                    <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>
@@ -84,13 +75,15 @@
                         {{ qso.qrz_status }}
                     </td>
                     <td><a href="edit/{{ qso.id }}">edit</a></td>
+                    <td><a href="delete/{{ qso.id }}">delete</a></td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
-</body>
+{% endblock %}
+{% block js %}
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-</html>
+{% endblock %}
 

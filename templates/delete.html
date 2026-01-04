@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Delete QSO
+{% endblock %}
+
+{% block css %}
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+
+        <div class="alert alert-danger">
+            <h4 class="alert-heading">⚠️ Delete QSO</h4>
+            <p>
+                You are about to <strong>permanently delete</strong> this QSO.
+                This will also invalidate any associated QRZ or QSL jobs.
+            </p>
+            <hr>
+            <p class="mb-0">
+                This action <strong>cannot be undone</strong>.
+            </p>
+        </div>
+
+        <!-- QSO Summary -->
+        <div class="alert alert-secondary mb-4" style="font-family:JetBrainsMono Nerd Font">
+            {% for k, v in qso.items() %}
+            <strong>{{ k }}:</strong> {{ v }} <br>
+            {% endfor %}
+        </div>
+
+        <!-- Actions -->
+        <form method="POST">
+            <input type="hidden" name="qso_id" value="{{ qso_id }}"/>
+            {% for k, v in qso.items() %}
+            <input type="hidden" name="{{ k }}" value="{{ v }}"/>
+            {% endfor %}
+            <div class="form-check mb-3">
+                <input
+                    type="checkbox"
+                    class="form-checkbox-input"
+                    type="checkbox"
+                    name="__remove_qrz"
+                    checked="yes"
+                    id="delQRZ"
+                />
+                <label class="form-check-label" for="delQRZ">Delete QRZ Logbook Entry</label>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">
+                    Yes, delete this QSO
+                </button>
+
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+    </div>
+{% endblock %}
+{% block js %}
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+{% endblock %}
+

@@ -15,6 +15,7 @@ from MyQSL.thumbnail import thumbnail_check
 from MyQSL.QRZ import QRZClient, expand_class
 from MyQSL.dbhandler import (
     add_qso,
+    del_qso,
     update_qso,
     add_job,
     fetch_qsos,
@@ -106,12 +107,47 @@ def index():
         row["qsl_status"] = qsl_status_text(qsl_gen_status, qsl_send_status)
         row["qrz_status"] = qrz_status_text(qrz_log_status)
 
-        qso_dicts.append(row)
+        qso_dicts.append(row) 
 
     return render_template(
         "index.html",
         qsolog=qso_dicts
     )
+
+
+# delete a qso
+@app.route("/delete/<qso_id>", methods=["GET", "POST"])
+def delete_qso(qso_id):
+    if request.method == "GET":
+        qso = get_qso_by_id(qso_id)
+        if qso is None:
+            return ("Invalid QSO ID", 400)
+
+        qsodata = json.loads(qso.get("payload_json"))
+
+        return render_template(
+            "delete.html",
+            qso_id=qso_id,
+            qso=qsodata,
+        )
+
+    elif request.method == "POST":
+        post_qso = request.form.to_dict()
+        print(post_qso)
+
+        if post_qso.get("qso_id") is not None:
+            print("not none")
+            del_qso(post_qso.get("qso_id"))
+
+        if post_qso.get("__remove_qrz") == "on":
+            print("remove qrz")
+            logbook_id = qrz.get_qso_id(post_qso)
+
+            if logbook_id is not None:
+                print(logbook_id)
+                qrz.delete_log_by_id(logbook_id)
+
+        return redirect(url_for("index"))
 
 
 # Lookup and QSL page
@@ -168,7 +204,6 @@ def edit_qso(qso_id):
         return ("Invalid QSO ID", 400)
 
     qsodata = json.loads(qso.get("payload_json"))
-    print(qsodata)
 
     callsign = qsodata.get("With")
     qrz_info = expand_class(qrz.lookup(callsign))

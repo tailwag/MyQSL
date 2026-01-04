@@ -77,8 +77,24 @@ def add_qso(qso):
     return qso_id
 
 
+def del_qso(qso_id):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        DELETE FROM qsos WHERE id = ?
+        """,
+        (
+            qso_id,
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+
 def update_qso(qso_id, qso):
-    print(qso_id)
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
 
@@ -106,6 +122,7 @@ def update_qso(qso_id, qso):
     conn.commit()
     conn.close()
     return qso_id
+
 
 def add_job(qso_id, job_type, payload=None):
     conn = sqlite3.connect(db_path)
