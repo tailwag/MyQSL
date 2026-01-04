@@ -52,6 +52,7 @@
                     <th scope="col">RSTR</th>
                     <th scope="col">Card Status</th>
                     <th scope="col">QRZ Status</th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -82,6 +83,7 @@
                     >
                         {{ qso.qrz_status }}
                     </td>
+                    <td><a href="edit/{{ qso.id }}">edit</a></td>
                 </tr>
             {% endfor %}
             </tbody>

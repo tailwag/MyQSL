@@ -6,6 +6,7 @@
 ####################################################################
 
 import os
+import json
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 
 from MyQSL.CardGen import genCard
@@ -16,6 +17,7 @@ from MyQSL.dbhandler import (
     add_qso,
     add_job,
     fetch_qsos,
+    get_qso_by_id,
     get_job_status
 )
 from MyQSL.config import get_config, build_freq_range, build_quick_freq, get_backdrop_images
@@ -145,6 +147,7 @@ def lookup(callsign):
 
     return render_template(
         "lookup.html",
+        qso_id=None,
         qrz_info=qrz_info,
         bands=bands,
         quickband=quickband,
@@ -157,6 +160,47 @@ def lookup(callsign):
         qslInfo=qslInfo
     )
 
+@app.route("/edit/<qso_id>", methods=["GET"])
+def edit_qso(qso_id):
+    qso = get_qso_by_id(qso_id)
+    if qso is None:
+        return ("Invalid QSO ID", 400)
+
+    qsodata = json.loads(qso.get("payload_json"))
+    print(qsodata)
+
+    callsign = qsodata.get("With")
+    qrz_info = expand_class(qrz.lookup(callsign))
+    qso_history = qrz.get_previous_qsos(callsign)
+
+    if qso_history:
+        for qso in qso_history:
+            rawfreq = qso.get("FREQ")
+            if rawfreq:
+                qso["FREQ"] = format_mhz(rawfreq)
+
+    bands = get_config("Settings/Bands").split(",")
+    quickband = get_config("Settings/QuickBand").split(",")
+    quickmode = get_config("Settings/QuickMode").split(",")
+    quickrsts = get_config("Settings/QuickRSTS").split(",")
+    quickrstr = get_config("Settings/QuickRSTR").split(",")
+    quickfreq = build_quick_freq(get_config("Settings/QuickFreq"))
+    freqrange = build_freq_range(get_config("Settings/FreqRange"))
+
+    return render_template(
+        "lookup.html",
+        qso_id=qso_id,
+        qrz_info=qrz_info,
+        bands=bands,
+        quickband=quickband,
+        quickmode=quickmode,
+        quickrsts=quickrsts,
+        quickrstr=quickrstr,
+        quickfreq=quickfreq,
+        freqrange=freqrange,
+        qso_history=qso_history,
+        qslInfo=qsodata
+    )
 
 @app.route("/qsl/choose", methods=["POST"])
 def choose_qsl():
