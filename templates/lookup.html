@@ -195,9 +195,10 @@
         </div>
     </div>
 </body>
-   <script>
-        const quickFreqs = {{ quickfreq | tojson }};
-        const freqRange = {{ freqrange | tojson }};
-    </script>
-    <script src="{{ url_for('static', filename='js/lookup.js') }}"></script>
+<script>
+    const quickFreqs = {{ quickfreq | tojson }};
+    const freqRange = {{ freqrange | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/lookup.js') }}"></script>
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </html>
