@@ -6,6 +6,7 @@
 
 {% block css %}
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 {% endblock %}
 
 {% block content %}
@@ -43,7 +44,6 @@
                     <th scope="col">Card Status</th>
                     <th scope="col">QRZ Status</th>
                     <th scope="col">Actions</th>
-                    <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>
@@ -74,8 +74,13 @@
                     >
                         {{ qso.qrz_status }}
                     </td>
-                    <td><a href="edit/{{ qso.id }}">edit</a></td>
-                    <td><a href="delete/{{ qso.id }}">delete</a></td>
+                    <td>
+                        <div>
+                            <a href="edit/{{ qso.id }}"><i class="bi bi-pencil-square"></i></a>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="delete/{{ qso.id }}"><i class="bi bi-trash"></i></a>
+                        </div>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
