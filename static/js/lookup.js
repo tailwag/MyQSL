@@ -37,6 +37,10 @@ function setQuickFreq() {
         const band = document.getElementById("bandSelect").value;
         const mode = document.getElementById("modeField").value;
         const freq = quickFreqs[mode]?.[band];
+
+        if (isNaN(freq))
+            return;
+
         if (freq) {
             document.getElementById("freqField").value = freq;
             setFreqPrecision();
@@ -61,13 +65,11 @@ function setFreqPrecision() {
 
     var frmtFreq = freq.toFixed(3);
 
-    console.log(frmtFreq);
-    if (freq > parseFloat(frmtFreq)) {
+    if (freq > parseFloat(frmtFreq))
         frmtFreq = freq;
-        console.log("hi");
-    }
 
-    document.getElementById("freqField").value = frmtFreq;
+    if (!isNaN(frmtFreq))
+        document.getElementById("freqField").value = frmtFreq;
 }
 
 function isFreqInBand() {
@@ -105,6 +107,9 @@ function setFreqLabel() {
     const prefix = document.getElementById("fpLabel").innerText;
     var absFrq = getAbsFreq();
 
+    if (isNaN(freq) || isNaN(absFrq))
+        return;
+
     newPrefix = "MHz";
 
     if (band === "630m" || band === "2200m") {
@@ -118,6 +123,7 @@ function setFreqLabel() {
     document.getElementById("fpLabel").innerText = newPrefix;
     document.getElementById("freqField").value = absFrq / 1000.0;
 }
+
 
 document.getElementById("bandSelect").addEventListener("change", setQuickFreq);
 document.getElementById("bandSelect").addEventListener("change", setFreqLabel);
