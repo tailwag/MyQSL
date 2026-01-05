@@ -1,25 +1,32 @@
-(function () {
-     const toggleBtn = document.getElementById("themeToggle");
-     const body = document.body;
+(() => {
+    const toggle = document.getElementById("themeToggle");
+    const icon = document.getElementById("themeIcon");
+    const body = document.body;
 
-     const savedTheme = localStorage.getItem("theme");
+    function applyTheme(theme) {
+        body.setAttribute("data-bs-theme", theme);
+        localStorage.setItem("theme", theme);
 
-     if (savedTheme) {
-         body.setAttribute("data-bs-theme", savedTheme);
-     }
+        if (theme === "dark") {
+            toggle.checked = true;
+            icon.className = "bi bi-sun";
+        } else {
+            toggle.checked = false;
+            icon.className = "bi bi-moon-stars";
+        }
+    }
 
-     function updateLabel() {
-         const theme = body.getAttribute("data-bs-theme");
-         toggleBtn.textContent = theme === "dark" ? "☀️ Light" : "🌙 Dark";
-     }
+    // Init
+    const saved = localStorage.getItem("theme") || "light";
+    applyTheme(saved);
 
-     toggleBtn.addEventListener("click", () => {
-         const current = body.getAttribute("data-bs-theme");
-         const next = current === "dark" ? "light" : "dark";
-         body.setAttribute("data-bs-theme", next);
-         localStorage.setItem("theme", next);
-         updateLabel();
-     });
+    // Toggle
+    toggle.addEventListener("change", () => {
+        applyTheme(toggle.checked ? "dark" : "light");
+    });
 
-     updateLabel();
- })();
+    // Clicking icon also toggles
+    icon.addEventListener("click", () => {
+        applyTheme(body.getAttribute("data-bs-theme") === "dark" ? "light" : "dark");
+    });
+})();
