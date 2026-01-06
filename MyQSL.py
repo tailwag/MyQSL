@@ -250,11 +250,13 @@ def choose_qsl():
     if old_qso_id is not None:
         old_qso = json.loads(get_qso_by_id(old_qso_id).get("payload_json"))
 
+    pota_enabled = bool(get_config("Settings/EnablePota", False))
     return render_template(
         "choose_qsl.html",
         qso=qso,
         old_qso=old_qso,
-        backdrops=backdrops
+        backdrops=backdrops,
+        pota_enabled=pota_enabled
     )
 
 

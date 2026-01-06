@@ -146,65 +146,97 @@
                 Do not generate a QSL card
             </label>
         </div>
-
         <hr class="my-4">
-        <h5>Actions</h5>
+        <div class="row">
+            <div class="col">
+                <h5>Actions</h5>
 
-        <!-- Email input -->
-        <div class="mb-3" style="max-width: 30%;">
-            <label for="emailInput" class="form-label">Email to send QSL card</label>
-            <input 
-                type="email"
-                class="form-control"
-                id="emailInput"
-                name="__hidden_email"
-                placeholder="Enter email..."
-                value="{{ qso.__hidden_email or '' }}"
-            >
-        </div>
+                <!-- Email input -->
+                <div class="mb-3" style="max-width: 300px;">
+                    <label for="emailInput" class="form-label">Email to send QSL card</label>
+                    <input 
+                        type="email"
+                        class="form-control"
+                        id="emailInput"
+                        name="__hidden_email"
+                        placeholder="Enter email..."
+                        value="{{ qso.__hidden_email or '' }}"
+                    >
+                </div>
 
-        <div class="form-check mb-3">
-            <input
-                class="form-check-input"
-                type="checkbox"
-                name="__hidden_send_qsl"
-                value="yes"
-                id="sendQsl"
-            >
-            <label class="form-check-label" for="sendQsl">
-                {% if qso.__hidden_qso_id %}
-                Re-issue QSL Card
-                {% else %}
-                Send QSL card
-                {% endif %}
-            </label>
-        </div>
-        <div class="form-check">
-            <input
-                class="form-check-input"
-                type="checkbox"
-                name="__hidden_log_qso"
-                value="yes"
-                id="logQso"
-                checked
-            >
-            <label class="form-check-label" for="logQso">
-                {% if qso.__hidden_qso_id %}
-                Update QRZ Log
-                {% else %}
-                Log QSO to QRZ
-                {% endif %}
-            </label>
+                    <div class="form-check mb-3">
+                        <input
+                                class="form-check-input"
+                                type="checkbox"
+                                name="__hidden_send_qsl"
+                                value="yes"
+                                id="sendQsl"
+                                >
+                                <label class="form-check-label" for="sendQsl">
+                                    {% if qso.__hidden_qso_id %}
+                                    Re-issue QSL Card
+                                    {% else %}
+                                    Send QSL card
+                                    {% endif %}
+                                </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input
+                                class="form-check-input"
+                                type="checkbox"
+                                name="__hidden_log_qso"
+                                value="yes"
+                                id="logQso"
+                                checked
+                                >
+                                <label class="form-check-label" for="logQso">
+                                    {% if qso.__hidden_qso_id %}
+                                    Update QRZ Log
+                                    {% else %}
+                                    Log QSO to QRZ
+                                    {% endif %}
+                                </label>
+                    </div>
+            </div>
+            {% if pota_enabled %}
+            <div class="col">
+                <h5>POTA Options</h5>
+                <div class="mb-3" style="max-width: 300px;">
+                    <label for="parkNumbers" class="form-label">Park Numbers (comma separated)</label>
+                    <input 
+                        type="text"
+                        class="form-control"
+                        id="parkNumbers"
+                        name="__hidden_park_numbers"
+                        placeholder="Park numbers..."
+                        value="{{ qso.__hidden_park_numbers or '' }}"
+                    >
+                </div>
+                <div class="form-check mb-3">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="__hidden_log_pota"
+                        value="yes"
+                        id="logPota"
+                        checked
+                    >
+                    <label class="form-check-label" for="logPota">
+                        Add to POTA Log
+                    </label>
+                </div>
+            </div>
+            {% endif %}
         </div>
         <div class="mt-4">
             <button type="submit" class="btn btn-primary">
                 Continue
             </button>
             <a
-                href="{{ url_for('lookup', callsign=qso.With) }}"
-                class="btn btn-secondary ms-2"
-            >
-                Cancel
+                    href="{{ url_for('lookup', callsign=qso.With) }}"
+                    class="btn btn-secondary ms-2"
+                    >
+                    Cancel
             </a>
         </div>
     </form>

@@ -2,6 +2,11 @@
 <MyQSLConfig>
     <Settings>
         <QSOHistory>20</QSOHistory>
+
+        <!-- enables pota specific options like logging park numbers
+             and exporting adif logs in pota format -->
+        <EnablePota>true</EnablePota>
+
         <Database>
             <Handler>sqlite3</Handler>
             <DBPath>./resource/MyQSL.db</DBPath>
