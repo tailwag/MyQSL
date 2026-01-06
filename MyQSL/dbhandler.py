@@ -37,7 +37,7 @@ def init_db(db_path=db_path):
 
         FOREIGN KEY (qso_id) REFERENCES qsos(id)
     );
-    CREATE IF NOT EXISTS qso_meta (
+    CREATE TABLE IF NOT EXISTS qso_meta (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         qso_id INTEGER NOT NULL,
         key TEXT NOT NULL,
@@ -47,21 +47,20 @@ def init_db(db_path=db_path):
 
         FOREIGN KEY (qso_id) REFERENCES qsos(id)
     );
-    CREATE IF NOT EXITS system_jobs (
+    CREATE TABLE IF NOT EXISTS system_jobs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         job_type TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'pending',
         last_error TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME
+    );
     """)
 
     conn.commit()
     conn.close()
 
 
-if not os.path.isfile(db_path):
-    init_db()
 
 def add_qso(qso):
     conn = sqlite3.connect(db_path)
@@ -177,7 +176,6 @@ def fetch_qsos():
 
     conn.close()
     return rows
-
 
 
 def fetch_next_job():
@@ -305,3 +303,6 @@ def get_gen_job(qso_id):
     gen_job = cur.fetchone()
     conn.close()
     return gen_job
+
+
+init_db()
