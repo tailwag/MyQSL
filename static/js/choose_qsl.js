@@ -71,8 +71,12 @@ H
 function toggleParkEntryVisibility() {
     boxChecked = document.getElementById("logPota").checked;
     parkInput  = document.getElementById("parkNumbers");
+    hunterRadio    = document.getElementById("hunterRadio");
+    activatorRadio = document.getElementById("activatorRadio");
 
     parkInput.disabled = !boxChecked;
+    hunterRadio.disabled = !boxChecked;
+    activatorRadio.disabled = !boxChecked;
 }
 document.getElementById("logPota").addEventListener("change", toggleParkEntryVisibility);
 

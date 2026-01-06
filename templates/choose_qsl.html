@@ -209,7 +209,7 @@
                         id="parkNumbers"
                         name="__hidden_park_numbers"
                         placeholder="Park numbers..."
-                        value="{{ qso.__hidden_park_numbers or '' }}"
+                        value="{{ old_qso.pota_parks or '' }}"
                     >
                 </div>
                 <div class="form-check mb-3">
@@ -219,10 +219,28 @@
                         name="__hidden_log_pota"
                         value="yes"
                         id="logPota"
+                        {% if old_qso.is_pota %}
                         checked
+                        {% endif %}
                     >
                     <label class="form-check-label" for="logPota">
+                        {% if old_qso and old_qso.is_pota %}
+                        Keep in POTA Log
+                        {% else %}
                         Add to POTA Log
+                        {% endif %}
+                    </label>
+                </div>
+                <div class="form-check form-check-inline mb-3">
+                    <input class="form-check-input" type="radio" name="__hidden_hunter_activator" id="hunterRadio" value="Hunter">
+                    <label class="form-check-label" for="hunterRadio">
+                        Hunter
+                    </label>
+                </div>
+                <div class="form-check form-check-inline mb-3">
+                    <input class="form-check-input" type="radio" name="__hidden_hunter_activator" id="activatorRadio" value="Activator">
+                    <label class="form-check-label" for="activatorRadio">
+                        Activator
                     </label>
                 </div>
             </div>

@@ -322,6 +322,7 @@ def new_meta_tag(qso_id, key, value):
     conn.commit()
     conn.close()
 
+
 def edit_meta_tag(qso_id, key, value):
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
@@ -338,9 +339,32 @@ def edit_meta_tag(qso_id, key, value):
         )
     )
 
+    conn.commit()
+    conn.close()
 
-def pota_mark_qso(qso_id):
+
+def get_meta_tag(qso_id, key):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT value FROM qso_meta WHERE qso_id IS ? AND key IS ?
+        """,
+        (
+            qso_id,
+            key
+        )
+    )
+    result = cur.fetchone()
+
+    conn.close()
+    return result[0]
+
+
+def pota_mark_qso(qso_id, role):
     new_meta_tag(qso_id, 'is_pota', True)
+    new_meta_tag(qso_id, 'pota_role', role)
 
 
 def pota_add_parks(qso_id, parks):

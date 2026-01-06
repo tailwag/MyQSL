@@ -22,7 +22,8 @@ from MyQSL.dbhandler import (
     get_qso_by_id,
     get_job_status,
     pota_mark_qso,
-    pota_add_parks
+    pota_add_parks,
+    get_meta_tag
 )
 from MyQSL.config import get_config, build_freq_range, build_quick_freq, get_backdrop_images
 
@@ -135,10 +136,8 @@ def delete_qso(qso_id):
 
     elif request.method == "POST":
         post_qso = request.form.to_dict()
-        print(post_qso)
 
         if post_qso.get("qso_id") is not None:
-            print("not none")
             del_qso(post_qso.get("qso_id"))
 
         if post_qso.get("__remove_qrz") == "on":
@@ -250,7 +249,17 @@ def choose_qsl():
     old_qso = None
     old_qso_id = qso.get("__hidden_qso_id")
     if old_qso_id is not None:
-        old_qso = json.loads(get_qso_by_id(old_qso_id).get("payload_json"))
+        old_qso_dict = json.loads(get_qso_by_id(old_qso_id).get("payload_json"))
+
+        if bool(get_config("Settings/EnablePota")):
+            old_qso_dict["is_pota"] = bool(get_meta_tag(old_qso_id, 'is_pota'))
+
+            if old_qso_dict.get("is_pota") is True:
+                parklist = get_meta_tag(old_qso_id, 'pota_parks')
+                parkjson = json.loads(parklist)
+                old_qso_dict["pota_parks"] = ", ".join(parkjson)
+
+        old_qso = old_qso_dict
 
     pota_enabled = bool(get_config("Settings/EnablePota", False))
     return render_template(
@@ -313,8 +322,9 @@ def confirm_qsl():
         if hidden_keys.get("log_pota") == "yes":
             parks = []
             park_string = hidden_keys.get("park_numbers")
+            role = hidden_keys.get("hunter_activator")
 
-            pota_mark_qso(qso_id)
+            pota_mark_qso(qso_id, role)
 
             if park_string is not None:
                 parks = park_string.split(",")
