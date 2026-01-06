@@ -304,5 +304,49 @@ def get_gen_job(qso_id):
     conn.close()
     return gen_job
 
+def new_meta_tag(qso_id, key, value):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        INSERT INTO qso_meta (qso_id, key, value)
+        VALUES (?, ?, ?)
+        """,
+        (
+            qso_id,
+            key,
+            value
+        )
+    )
+    conn.commit()
+    conn.close()
+
+def edit_meta_tag(qso_id, key, value):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute (
+        """
+        UPDATE qso_meta SET value=?
+        WHERE qso_id=? AND key=?
+        """,
+        (
+            value,
+            qso_id, 
+            key
+        )
+    )
+
+
+def pota_mark_qso(qso_id):
+    new_meta_tag(qso_id, 'is_pota', True)
+
+
+def pota_add_parks(qso_id, parks):
+    if parks is not None:
+        parks_string = json.dumps(parks)
+        new_meta_tag(qso_id, 'pota_parks', parks_string)
+
 
 init_db()

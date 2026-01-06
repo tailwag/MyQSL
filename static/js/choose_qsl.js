@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         applyRules();
     });
-
+H
     // When selecting "no card"
     noCard.addEventListener("change", applyRules);
 
@@ -67,3 +67,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     applyRules();
 });
+
+function toggleParkEntryVisibility() {
+    boxChecked = document.getElementById("logPota").checked;
+    parkInput  = document.getElementById("parkNumbers");
+
+    parkInput.disabled = !boxChecked;
+}
+document.getElementById("logPota").addEventListener("change", toggleParkEntryVisibility);
+
+toggleParkEntryVisibility();

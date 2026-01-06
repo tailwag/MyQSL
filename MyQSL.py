@@ -20,7 +20,9 @@ from MyQSL.dbhandler import (
     add_job,
     fetch_qsos,
     get_qso_by_id,
-    get_job_status
+    get_job_status,
+    pota_mark_qso,
+    pota_add_parks
 )
 from MyQSL.config import get_config, build_freq_range, build_quick_freq, get_backdrop_images
 
@@ -306,6 +308,19 @@ def confirm_qsl():
     else:
         qso_id = update_qso(hidden_keys.get("qso_id"), qso)
 
+    # if pota is enabled and qso is marked as pota, add to db
+    if bool(get_config("Settings/EnablePota", False)):
+        if hidden_keys.get("log_pota") == "yes":
+            parks = []
+            park_string = hidden_keys.get("park_numbers")
+
+            pota_mark_qso(qso_id)
+
+            if park_string is not None:
+                parks = park_string.split(",")
+                parks = [park.strip() for park in parks]
+                pota_add_parks(qso_id, parks)
+
     # generate QSL card using selected background
     if hidden_keys.get("backdrop") != "none":
         add_job(qso_id, "QSL_GEN", {
@@ -316,6 +331,7 @@ def confirm_qsl():
     if hidden_keys.get('send_qsl') == "yes":
         add_job(qso_id, "QSL_SEND")
 
+    # only fires when editing an existing QSO
     qso["Freq"] = adjusted_freq
     if hidden_keys.get('log_qso') == "yes":
         if old_qso is not None:
