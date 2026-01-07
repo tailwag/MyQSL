@@ -256,13 +256,12 @@ def choose_qsl():
         old_qso_dict = json.loads(get_qso_by_id(old_qso_id).get("payload_json"))
 
         if bool(get_config("Settings/EnablePota")):
-            old_qso_dict["is_pota"] = bool(get_meta_tag(old_qso_id, 'is_pota'))
+            old_qso_dict["pota_role"] = get_meta_tag(old_qso_id, 'pota_role')
 
-            if old_qso_dict.get("is_pota") is True:
+            if old_qso_dict.get('pota_role') is not None:
                 parklist = get_meta_tag(old_qso_id, 'pota_parks')
                 parkjson = json.loads(parklist)
                 old_qso_dict["pota_parks"] = ", ".join(parkjson)
-                old_qso_dict["pota_role"] = get_meta_tag(old_qso_id, 'pota_parks')
 
         old_qso = old_qso_dict
 
@@ -324,26 +323,15 @@ def confirm_qsl():
 
     # if pota is enabled and qso is marked as pota, add to db
     if bool(get_config("Settings/EnablePota", False)):
-        if bool(hidden_keys.get("old_is_pota")) == True:
-            print("test")
-            print(bool("yes"))
-            print("log checkbox")
-            print(hidden_keys.get("old_is_pota"))
-            print(hidden_keys.get("log_pota"))
-            print("parks string")
-            print(hidden_keys.get("old_pota_parks"))
-            print(hidden_keys.get("park_numbers"))
-            print("radio buttons")
-            print(hidden_keys.get("old_pota_role"))
-            print(hidden_keys.get("hunter_activator"))
-
-            oldLogCheck = hidden_keys.get("old_is_pota")
+        # editing pota data
+        if old_qso and old_qso.get("pota_role") is not None:
+            oldLogCheck = True
             newLogCheck = bool(hidden_keys.get("log_pota"))
 
             if newLogCheck == oldLogCheck: # update existing log
-                oldParkString = hidden_keys.get("old_pota_parks")
+                oldParkString = old_qso.get("pota_parks")
                 newParkString = hidden_keys.get("park_numbers")
-                oldPotaRole = hidden_keys.get("old_pota_role")
+                oldPotaRole = old_qso.get("pota_role")
                 newPotaRole = hidden_keys.get("hunter_activator")
 
                 if newParkString != oldParkString:
@@ -354,7 +342,7 @@ def confirm_qsl():
             else: # remove from pota log
                 pota_del_qso(qso_id)
 
-        if hidden_keys.get("log_pota") == "yes":
+        elif hidden_keys.get("log_pota") == "yes":
             parks = []
             park_string = hidden_keys.get("park_numbers")
             role = hidden_keys.get("hunter_activator")

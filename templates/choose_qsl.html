@@ -201,9 +201,8 @@
             {% if pota_enabled %}
             <div class="col">
                 {% if old_qso.is_pota %}
-                <input type="hidden" name="__hidden_old_is_pota" value="{{ old_qso.is_pota }}"/>
-                <input type="hidden" name="__hidden_old_pota_parks" value="{{ old_qso.pota_parks }}"/>
-                <input type="hidden" name="__hidden_old_pota_role" value="{{ old_qso.pota_role }}"/>
+                <input type="hidden" name="__oldqso_pota_parks" value="{{ old_qso.pota_parks }}"/>
+                <input type="hidden" name="__oldqso_pota_role" value="{{ old_qso.pota_role }}"/>
                 {% endif %}
                 <h5>POTA Options</h5>
                 <div class="mb-3" style="max-width: 300px;">
@@ -224,12 +223,12 @@
                         name="__hidden_log_pota"
                         value="yes"
                         id="logPota"
-                        {% if old_qso.is_pota %}
+                        {% if old_qso and old_qso.pota_role %}
                         checked
                         {% endif %}
                     >
                     <label class="form-check-label" for="logPota">
-                        {% if old_qso and old_qso.is_pota %}
+                        {% if old_qso and old_qso.pota_role %}
                         Keep in POTA Log
                         {% else %}
                         Add to POTA Log
@@ -243,7 +242,7 @@
                         name="__hidden_hunter_activator"
                         id="hunterRadio"
                         value="Hunter"
-                        {% if not old_qso.pota_role or old_qso.pota_role == "Hunter" %}
+                        {% if not old_qso or not old_qso.pota_role or old_qso.pota_role == "Hunter" %}
                         default
                         {% endif %}
                     >

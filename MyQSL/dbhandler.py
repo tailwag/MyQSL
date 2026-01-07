@@ -384,7 +384,6 @@ def del_meta_tag(qso_id, key):
 
 
 def pota_mark_qso(qso_id, role):
-    new_meta_tag(qso_id, 'is_pota', True)
     new_meta_tag(qso_id, 'pota_role', role)
 
 
