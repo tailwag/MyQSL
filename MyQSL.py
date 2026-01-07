@@ -88,6 +88,23 @@ def qrz_status_text(qrz_log_status):
         return "Logged"
 
 
+def get_keys(main_dict, prefix):
+    new_dict = None
+    full_prefix = "__" + prefix + "_"
+    prefix_length = len(full_prefix) # __ and _ is 3
+    for k, v in main_dict.items():
+        if k[0:prefix_length] == full_prefix:
+            if new_dict is None:
+                new_dict = {}
+
+            new_dict[k[prefix_length:]] = v
+
+    for i in new_dict:
+        del main_dict[full_prefix + i]
+
+    return new_dict
+
+
 ######################################################################
 # Flask routes                                                       #
 ######################################################################
@@ -285,25 +302,10 @@ def confirm_qsl():
 
     # extra values we need from the form, but must be
     # removed before the QSL card gets generated
-    hidden_keys = {}
-    for k, v in qso.items():
-        if k[0:9] == "__hidden_":
-            hidden_keys[k[9:]] = v
-
-    for i in hidden_keys:
-        del qso['__hidden_' + i]
+    hidden_keys = get_keys(qso, 'hidden')
 
     # only used when updating an existing qso
-    old_qso = None
-    if hidden_keys.get("qso_id") is not None:
-        old_qso = {}
-        for k, v in qso.items():
-            if k[0:9] == "__oldqso_":
-                old_qso[k[9:]] = v
-
-        for i in old_qso:
-            del qso['__oldqso_' + i]
-
+    old_qso = get_keys(qso, 'oldqso')
 
     # deal with MyQSO / QRZ low band frequency discrepancy
     # I think most people would prefer 137KHz to be labeled as 
@@ -328,22 +330,25 @@ def confirm_qsl():
             old_log_check = True
             new_log_check = bool(hidden_keys.get("log_pota"))
 
-            if new_log_check == old_log_check: # update existing log
+            if new_log_check == old_log_check:  # update existing log
                 old_park_string = old_qso.get("pota_parks")
                 new_park_string = hidden_keys.get("park_numbers")
-                oldPotaRole = old_qso.get("pota_role")
-                newPotaRole = hidden_keys.get("pota_role")
+
+                old_pota_role = old_qso.get("pota_role")
+                new_pota_role = hidden_keys.get("pota_role")
 
                 if new_park_string != old_park_string:
                     parks = new_park_string.split(",")
                     parks = [park.strip() for park in parks]
                     pota_edit_parks(qso_id, parks)
-                if newPotaRole != oldPotaRole:
-                    pota_edit_role(qso_id, newPotaRole)
 
-            else: # remove from pota log
+                if new_pota_role != old_pota_role:
+                    pota_edit_role(qso_id, new_pota_role)
+
+            else:  # remove from pota log
                 pota_del_qso(qso_id)
 
+        # new pota log
         elif hidden_keys.get("log_pota") == "yes":
             parks = []
             park_string = hidden_keys.get("park_numbers")
