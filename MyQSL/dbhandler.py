@@ -359,6 +359,9 @@ def get_meta_tag(qso_id, key):
     result = cur.fetchone()
 
     conn.close()
+    if result is None:
+        return None
+
     return result[0]
 
 

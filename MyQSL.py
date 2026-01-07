@@ -258,6 +258,7 @@ def choose_qsl():
                 parklist = get_meta_tag(old_qso_id, 'pota_parks')
                 parkjson = json.loads(parklist)
                 old_qso_dict["pota_parks"] = ", ".join(parkjson)
+                old_qso_dict["pota_role"] = get_meta_tag(old_qso_id, 'pota_parks')
 
         old_qso = old_qso_dict
 
