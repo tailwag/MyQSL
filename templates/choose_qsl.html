@@ -26,28 +26,28 @@
         <div class="col-md-6">
             <strong>&nbsp;New QSO Data</strong>
             <div class="alert alert-secondary qso-summary mb-4">
-                <strong>With: 
+                <strong>With:
                     {% if old_qso.With != qso.With %}
                         <mark>{{ qso.With }}</mark>
                     {% else %}
                         {{ qso.With }}
                     {% endif %}
                 </strong><br>
-                <strong>Date: 
+                <strong>Date:
                     {% if old_qso.Date != qso.Date %}
                         <mark>{{ qso.Date }}</mark>
                     {% else %}
                         {{ qso.Date }}
                     {% endif %}
                 </strong><br>
-                <strong>Band: 
+                <strong>Band:
                     {% if old_qso.Band != qso.Band %}
                         <mark>{{ qso.Band }}</mark>
                     {% else %}
                         {{ qso.Band }}
                     {% endif %}
                 </strong><br>
-                <strong>Mode: 
+                <strong>Mode:
                     {% if old_qso.Mode != qso.Mode %}
                         <mark>{{ qso.Mode }}</mark>
                     {% else %}
@@ -55,7 +55,7 @@
                     {% endif %}
                 </strong><br>
                 <strong>Freq: 
-                    {% if old_qso.Freq != qso.Freq %}
+                    {% if old_qso.Freq != qso.Freq + qso.__hidden_frequency_prefix %}
                         <mark>{{ qso.Freq }}{{ qso.__hidden_frequency_prefix }}</mark>
                     {% else %}
                         {{ qso.Freq }}{{ qso.__hidden_frequency_prefix }}

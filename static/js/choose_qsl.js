@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         applyRules();
     });
-H
+
     // When selecting "no card"
     noCard.addEventListener("change", applyRules);
 
