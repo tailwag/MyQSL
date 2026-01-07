@@ -142,6 +142,7 @@ def delete_qso(qso_id):
 
         if post_qso.get("qso_id") is not None:
             del_qso(post_qso.get("qso_id"))
+            pota_del_qso(post_qso.get("qso_id"))
 
         if post_qso.get("__remove_qrz") == "on":
             print("remove qrz")
