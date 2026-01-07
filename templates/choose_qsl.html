@@ -200,6 +200,11 @@
             </div>
             {% if pota_enabled %}
             <div class="col">
+                {% if old_qso.is_pota %}
+                <input type="hidden" name="__hidden_old_is_pota" value="{{ old_qso.is_pota }}"/>
+                <input type="hidden" name="__hidden_old_pota_parks" value="{{ old_qso.pota_parks }}"/>
+                <input type="hidden" name="__hidden_old_pota_role" value="{{ old_qso.pota_role }}"/>
+                {% endif %}
                 <h5>POTA Options</h5>
                 <div class="mb-3" style="max-width: 300px;">
                     <label for="parkNumbers" class="form-label">Park Numbers (comma separated)</label>

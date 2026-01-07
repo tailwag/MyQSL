@@ -365,15 +365,50 @@ def get_meta_tag(qso_id, key):
     return result[0]
 
 
+def del_meta_tag(qso_id, key):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        DELETE FROM qso_meta WHERE qso_id IS ? AND key IS ?
+        """,
+        (
+            qso_id,
+            key,
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+
 def pota_mark_qso(qso_id, role):
     new_meta_tag(qso_id, 'is_pota', True)
     new_meta_tag(qso_id, 'pota_role', role)
 
 
+def pota_edit_role(qso_id, role):
+    if qso_id is not None and role is not None:
+        edit_meta_tag(qso_id, 'pota_role', role.strip())
+
+
+def pota_del_qso(qso_id):
+    if qso_id is not None:
+        for key in ['is_pota', 'pota_role', 'pota_parks']:
+            del_meta_tag(qso_id, key)
+
+
 def pota_add_parks(qso_id, parks):
-    if parks is not None:
+    if qso_id is not None and parks is not None:
         parks_string = json.dumps(parks)
         new_meta_tag(qso_id, 'pota_parks', parks_string)
+
+
+def pota_edit_parks(qso_id, parks):
+    if qso_id is not None and parks is not None:
+        parks_string = json.dumps(parks)
+        edit_meta_tag(qso_id, 'pota_parks', parks_string)
 
 
 init_db()

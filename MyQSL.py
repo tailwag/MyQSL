@@ -23,7 +23,10 @@ from MyQSL.dbhandler import (
     get_job_status,
     pota_mark_qso,
     pota_add_parks,
-    get_meta_tag
+    get_meta_tag,
+    pota_edit_role,
+    pota_edit_parks,
+    pota_del_qso
 )
 from MyQSL.config import get_config, build_freq_range, build_quick_freq, get_backdrop_images
 
@@ -320,6 +323,36 @@ def confirm_qsl():
 
     # if pota is enabled and qso is marked as pota, add to db
     if bool(get_config("Settings/EnablePota", False)):
+        if bool(hidden_keys.get("old_is_pota")) == True:
+            print("test")
+            print(bool("yes"))
+            print("log checkbox")
+            print(hidden_keys.get("old_is_pota"))
+            print(hidden_keys.get("log_pota"))
+            print("parks string")
+            print(hidden_keys.get("old_pota_parks"))
+            print(hidden_keys.get("park_numbers"))
+            print("radio buttons")
+            print(hidden_keys.get("old_pota_role"))
+            print(hidden_keys.get("hunter_activator"))
+
+            oldLogCheck = hidden_keys.get("old_is_pota")
+            newLogCheck = bool(hidden_keys.get("log_pota"))
+
+            if newLogCheck == oldLogCheck: # update existing log
+                oldParkString = hidden_keys.get("old_pota_parks")
+                newParkString = hidden_keys.get("park_numbers")
+                oldPotaRole = hidden_keys.get("old_pota_role")
+                newPotaRole = hidden_keys.get("hunter_activator")
+
+                if newParkString != oldParkString:
+                    pota_edit_parks(qso_id, newParkString)
+                if newPotaRole != oldPotaRole:
+                    pota_edit_role(qso_id, newPotaRole)
+
+            else: # remove from pota log
+                pota_del_qso(qso_id)
+
         if hidden_keys.get("log_pota") == "yes":
             parks = []
             park_string = hidden_keys.get("park_numbers")
