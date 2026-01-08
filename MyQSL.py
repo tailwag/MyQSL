@@ -88,10 +88,21 @@ def qrz_status_text(qrz_log_status):
         return "Logged"
 
 
+def get_status_texts(qso_id):
+    qsl_gen_status  = get_job_status(qso_id, "QSL_GEN")
+    qsl_send_status = get_job_status(qso_id, "QSL_SEND")
+    qrz_log_status  = get_job_status(qso_id, "QRZ_LOG")
+
+    qsl_status = qsl_status_text(qsl_gen_status, qsl_send_status)
+    qrz_status = qrz_status_text(qrz_log_status)
+
+    return qsl_status, qrz_status
+
+
 def get_keys(main_dict, prefix):
     new_dict = None
     full_prefix = "__" + prefix + "_"
-    prefix_length = len(full_prefix) # __ and _ is 3
+    prefix_length = len(full_prefix)  # __ and _ is 3
     for k, v in main_dict.items():
         if k[0:prefix_length] == full_prefix:
             if new_dict is None:
@@ -99,8 +110,9 @@ def get_keys(main_dict, prefix):
 
             new_dict[k[prefix_length:]] = v
 
-    for i in new_dict:
-        del main_dict[full_prefix + i]
+    if new_dict is not None:
+        for i in new_dict:
+            del main_dict[full_prefix + i]
 
     return new_dict
 
@@ -121,16 +133,9 @@ def index():
     qso_dicts = []
 
     for qso in qsos:
-        qsl_gen_status = get_job_status(qso["id"], "QSL_GEN")
-        qsl_send_status = get_job_status(qso["id"], "QSL_SEND")
-        qrz_log_status = get_job_status(qso["id"], "QRZ_LOG")
-
         row = dict(qso)
-
-        row["qsl_status"] = qsl_status_text(qsl_gen_status, qsl_send_status)
-        row["qrz_status"] = qrz_status_text(qrz_log_status)
-
-        qso_dicts.append(row) 
+        row['qsl_status'], row['qrz_status'] = get_status_texts(qso.get('id'))
+        qso_dicts.append(row)
 
     return render_template(
         "index.html",
@@ -186,7 +191,6 @@ def lookup(callsign):
             if rawfreq:
                 qso["FREQ"] = format_mhz(rawfreq)
 
-
     qslInfo = {
         "With": callsign,
         "Band": session.get("last_band", ""),
@@ -218,6 +222,7 @@ def lookup(callsign):
         qso_history=qso_history,
         qslInfo=qslInfo
     )
+
 
 @app.route("/edit/<qso_id>", methods=["GET"])
 def edit_qso(qso_id):
@@ -269,20 +274,29 @@ def choose_qsl():
 
     old_qso = None
     old_qso_id = qso.get("__hidden_qso_id")
+
     if old_qso_id is not None:
-        old_qso_dict = json.loads(get_qso_by_id(old_qso_id).get("payload_json"))
+        old_qso = json.loads(get_qso_by_id(old_qso_id).get("payload_json"))
+        old_qso_qsl_status, old_qso_qrz_status = get_status_texts(old_qso_id)
+        print(old_qso_id)
+        print(old_qso_qsl_status)
+        print(old_qso_qrz_status)
+        if old_qso_qsl_status == "Sent":
+            old_qso['qsl_sent'] = True
+
+        if old_qso_qrz_status == "Logged":
+            old_qso['qrz_logged'] = True
 
         if bool(get_config("Settings/EnablePota")):
-            old_qso_dict["pota_role"] = get_meta_tag(old_qso_id, 'pota_role')
+            old_qso["pota_role"] = get_meta_tag(old_qso_id, 'pota_role')
 
-            if old_qso_dict.get('pota_role') is not None:
+            if old_qso.get('pota_role') is not None:
                 parklist = get_meta_tag(old_qso_id, 'pota_parks')
                 parkjson = json.loads(parklist)
-                old_qso_dict["pota_parks"] = ", ".join(parkjson)
-
-        old_qso = old_qso_dict
+                old_qso["pota_parks"] = ", ".join(parkjson)
 
     pota_enabled = bool(get_config("Settings/EnablePota", False))
+
     return render_template(
         "choose_qsl.html",
         qso=qso,

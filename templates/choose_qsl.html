@@ -169,7 +169,9 @@
                                 class="form-check-input"
                                 type="checkbox"
                                 name="__hidden_send_qsl"
+                                {% if not old_qso or old_qso.qsl_sent %}
                                 value="yes"
+                                {% endif %}
                                 id="sendQsl"
                                 >
                                 <label class="form-check-label" for="sendQsl">
@@ -180,12 +182,15 @@
                                     {% endif %}
                                 </label>
                     </div>
+                    <p>{{ old_qso.qsl_sent }}</p>
                     <div class="form-check mb-3">
                         <input
                                 class="form-check-input"
                                 type="checkbox"
                                 name="__hidden_log_qso"
+                                {% if not old_qso or old_qso.qrz_logged %}
                                 value="yes"
+                                {% endif %}
                                 id="logQso"
                                 checked
                                 >

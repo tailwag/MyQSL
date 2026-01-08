@@ -174,6 +174,8 @@ def fetch_qsos():
         (history,)
     ).fetchall()
 
+    rows = [dict(row) for row in rows]
+
     conn.close()
     return rows
 
