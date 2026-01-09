@@ -274,7 +274,7 @@ const ctz = document.getElementById('cardChart');
 const cardChart = new Chart(ctz, {
     type: 'doughnut',
     data: {
-        labels: [ "Cards Sent", "No Card" ],
+        labels: [ "Card Sent", "No Card" ],
         datasets: [{
             data: [ {{ cards_sent }}, {{ total_qsos - cards_sent }} ],
             backgroundColor: [ '#9FD6A7', '#F4A6AF' ],
