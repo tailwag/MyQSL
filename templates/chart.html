@@ -76,17 +76,6 @@ Chart Demo
             </div>
         </div>
     </div>
-    <!--
-    <div class="col col-lg-4">
-        <div class="chart-section shadow">
-            <div class="container mt-2">
-                <div class="row">
-                    <strong>KD8VCP</strong>
-                </div>
-            </div>
-        </div>
-    </div>
-    -->
 </div>
 <div class="row mt-4">
     <div class="col">
@@ -111,11 +100,11 @@ Chart Demo
     </div>
     <div class="col">
         <div class="chart-section shadow">
-            <h5><strong>Mode Stats</strong></h5>
+            <h5><strong>Card Stats</strong></h5>
             <div class="container mt-4">
                 <div class="row justify-content-center">
                     <div class="col">
-                        <canvas id="testChart"></canvas>
+                        <canvas id="cardChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -281,14 +270,14 @@ const modeChart = new Chart(cty, {
     options: makeChartOptions()
 });
 
-const ctz = document.getElementById('testChart');
-const testChart = new Chart(ctz, {
+const ctz = document.getElementById('cardChart');
+const cardChart = new Chart(ctz, {
     type: 'doughnut',
     data: {
-        labels: [ {% for k, v in modes.items() %} '{{ k }}', {% endfor %} ],
+        labels: [ "Cards Sents", "No Card" ],
         datasets: [{
-            data: [ {% for k, v in modes.items() %} {{ v }}, {% endfor %} ],
-            backgroundColor: [ {% for k, v in modes.items() %} '{{ colors[loop.index0] }}', {% endfor %} ],
+            data: [ {{ cards_sent }}, {{ total_qsos - cards_sent }} ],
+            backgroundColor: [ '#9FD6A7', '#F4A6AF' ],
             borderWidth: 0
         }]
     },
@@ -296,7 +285,7 @@ const testChart = new Chart(ctz, {
 });
 
 const observer = new MutationObserver(() => {
-    [bandChart, modeChart, testChart].forEach(chart => {
+    [bandChart, modeChart, cardChart].forEach(chart => {
         chart.options.plugins.legend.labels.color = bsVar('--bs-body-color');
         chart.options.plugins.tooltip.titleColor = bsVar('--bs-body-color');
         chart.options.plugins.tooltip.bodyColor = bsVar('--bs-body-color');

@@ -406,6 +406,9 @@ def chart():
     bands = db.stats.bands()
     dates = db.stats.qsos_by_day(7)
 
+    total_qsos = db.stats.total_qsos()
+    cards_sent = db.stats.cards_sent()
+
     colors = get_config("Settings/Colors").split(",")
     colors = [color.strip() for color in colors]
 
@@ -415,7 +418,9 @@ def chart():
         modes=modes,
         bands=bands,
         dates=dates,
-        qsolog=qso_dicts
+        qsolog=qso_dicts,
+        total_qsos=total_qsos,
+        cards_sent=cards_sent
     )
 
 @app.route("/API/v1", methods=["POST"])
