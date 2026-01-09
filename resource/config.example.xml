@@ -2,7 +2,7 @@
 <MyQSLConfig>
     <Settings>
         <QSOHistory>20</QSOHistory>
-
+        <Colors>#9FD6A7,#F4D35E,#F4A6AF,#9BB7E8,#B3A4D9,#8FCBC4,#F4B183,#C6A0C6,#B7CC3F,#8FBAD9,#E28A8A,#B5B5B5</Colors>
         <!-- enables pota specific options like logging park numbers
              and exporting adif logs in pota format -->
         <EnablePota>true</EnablePota>

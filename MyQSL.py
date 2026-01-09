@@ -125,9 +125,25 @@ def index():
         row['qsl_status'], row['qrz_status'] = get_status_texts(qso.get('id'))
         qso_dicts.append(row)
 
+    modes = db.stats.modes()
+    bands = db.stats.bands()
+    dates = db.stats.qsos_by_day(7)
+
+    total_qsos = db.stats.total_qsos()
+    cards_sent = db.stats.cards_sent()
+
+    colors = get_config("Settings/Colors").split(",")
+    colors = [color.strip() for color in colors]
+
     return render_template(
         "index.html",
-        qsolog=qso_dicts
+        colors=colors,
+        modes=modes,
+        bands=bands,
+        dates=dates,
+        qsolog=qso_dicts,
+        total_qsos=total_qsos,
+        cards_sent=cards_sent
     )
 
 
@@ -384,44 +400,6 @@ def confirm_qsl():
     flash("QSO processed successfully", "success")
     return redirect(url_for("index", callsign=qso["With"]))
 
-
-@app.route("/chart", methods=["GET"])
-def chart():
-    if request.method == "POST":
-        callsign = request.form.get("callsign", "").upper()
-        if callsign:
-            return redirect(url_for("lookup", callsign=callsign))
-
-    num_qsos = int(get_config("Settings/QSOHistory"))
-    qsos = db.qso.get(num_qsos)
-
-    qso_dicts = []
-
-    for qso in qsos:
-        row = dict(qso)
-        row['qsl_status'], row['qrz_status'] = get_status_texts(qso.get('id'))
-        qso_dicts.append(row)
-
-    modes = db.stats.modes()
-    bands = db.stats.bands()
-    dates = db.stats.qsos_by_day(7)
-
-    total_qsos = db.stats.total_qsos()
-    cards_sent = db.stats.cards_sent()
-
-    colors = get_config("Settings/Colors").split(",")
-    colors = [color.strip() for color in colors]
-
-    return render_template(
-        "chart.html",
-        colors=colors,
-        modes=modes,
-        bands=bands,
-        dates=dates,
-        qsolog=qso_dicts,
-        total_qsos=total_qsos,
-        cards_sent=cards_sent
-    )
 
 @app.route("/API/v1", methods=["POST"])
 def api():
