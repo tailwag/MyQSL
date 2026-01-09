@@ -13,24 +13,11 @@ from MyQSL.CardGen import genCard
 from MyQSL.O365_Send import sendMessage
 from MyQSL.thumbnail import thumbnail_check
 from MyQSL.QRZ import QRZClient, expand_class
-from MyQSL.dbhandler import (
-    add_qso,
-    del_qso,
-    update_qso,
-    add_job,
-    fetch_qsos,
-    get_qso_by_id,
-    get_job_status,
-    pota_mark_qso,
-    pota_add_parks,
-    get_meta_tag,
-    pota_edit_role,
-    pota_edit_parks,
-    pota_del_qso
-)
+from MyQSL.dbhandler import Db
 from MyQSL.config import get_config, build_freq_range, build_quick_freq, get_backdrop_images
 
 qrz = QRZClient()
+db = Db(get_config("Settings/Database/DBPath"))
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-secret")
@@ -89,9 +76,9 @@ def qrz_status_text(qrz_log_status):
 
 
 def get_status_texts(qso_id):
-    qsl_gen_status  = get_job_status(qso_id, "QSL_GEN")
-    qsl_send_status = get_job_status(qso_id, "QSL_SEND")
-    qrz_log_status  = get_job_status(qso_id, "QRZ_LOG")
+    qsl_gen_status  = db.job.get_status(qso_id, "QSL_GEN")
+    qsl_send_status = db.job.get_status(qso_id, "QSL_SEND")
+    qrz_log_status  = db.job.get_status(qso_id, "QRZ_LOG")
 
     qsl_status = qsl_status_text(qsl_gen_status, qsl_send_status)
     qrz_status = qrz_status_text(qrz_log_status)
@@ -128,7 +115,8 @@ def index():
         if callsign:
             return redirect(url_for("lookup", callsign=callsign))
 
-    qsos = fetch_qsos()
+    num_qsos = int(get_config("Settings/QSOHistory"))
+    qsos = db.qso.get(num_qsos)
 
     qso_dicts = []
 
@@ -147,7 +135,7 @@ def index():
 @app.route("/delete/<qso_id>", methods=["GET", "POST"])
 def delete_qso(qso_id):
     if request.method == "GET":
-        qso = get_qso_by_id(qso_id)
+        qso = db.qso.get_by_id(qso_id)
         if qso is None:
             return ("Invalid QSO ID", 400)
 
@@ -163,15 +151,13 @@ def delete_qso(qso_id):
         post_qso = request.form.to_dict()
 
         if post_qso.get("qso_id") is not None:
-            del_qso(post_qso.get("qso_id"))
-            pota_del_qso(post_qso.get("qso_id"))
+            db.qso.delete(post_qso.get("qso_id"))
+            db.pota.delete(post_qso.get("qso_id"))
 
         if post_qso.get("__remove_qrz") == "on":
-            print("remove qrz")
             logbook_id = qrz.get_qso_id(post_qso)
 
             if logbook_id is not None:
-                print(logbook_id)
                 qrz.delete_log_by_id(logbook_id)
 
         return redirect(url_for("index"))
@@ -226,7 +212,7 @@ def lookup(callsign):
 
 @app.route("/edit/<qso_id>", methods=["GET"])
 def edit_qso(qso_id):
-    qso = get_qso_by_id(qso_id)
+    qso = db.qso.get_by_id(qso_id)
     if qso is None:
         return ("Invalid QSO ID", 400)
 
@@ -276,7 +262,7 @@ def choose_qsl():
     old_qso_id = qso.get("__hidden_qso_id")
 
     if old_qso_id is not None:
-        old_qso = json.loads(get_qso_by_id(old_qso_id).get("payload_json"))
+        old_qso = json.loads(db.qso.get_by_id(old_qso_id).get("payload_json"))
         old_qso_qsl_status, old_qso_qrz_status = get_status_texts(old_qso_id)
         print(old_qso_id)
         print(old_qso_qsl_status)
@@ -288,10 +274,10 @@ def choose_qsl():
             old_qso['qrz_logged'] = True
 
         if bool(get_config("Settings/EnablePota")):
-            old_qso["pota_role"] = get_meta_tag(old_qso_id, 'pota_role')
+            old_qso["pota_role"] = db.qso.tag.get(old_qso_id, 'pota_role')
 
             if old_qso.get('pota_role') is not None:
-                parklist = get_meta_tag(old_qso_id, 'pota_parks')
+                parklist = db.qso.tag.get(old_qso_id, 'pota_parks')
                 parkjson = json.loads(parklist)
                 old_qso["pota_parks"] = ", ".join(parkjson)
 
@@ -333,9 +319,9 @@ def confirm_qsl():
 
     # add qso to local database and get ID
     if hidden_keys.get("qso_id") is None:
-        qso_id = add_qso(qso)
+        qso_id = db.qso.add(qso)
     else:
-        qso_id = update_qso(hidden_keys.get("qso_id"), qso)
+        qso_id = db.qso.edit(hidden_keys.get("qso_id"), qso)
 
     # if pota is enabled and qso is marked as pota, add to db
     if bool(get_config("Settings/EnablePota", False)):
@@ -354,13 +340,13 @@ def confirm_qsl():
                 if new_park_string != old_park_string:
                     parks = new_park_string.split(",")
                     parks = [park.strip() for park in parks]
-                    pota_edit_parks(qso_id, parks)
+                    db.pota.set_parks(qso_id, parks)
 
                 if new_pota_role != old_pota_role:
-                    pota_edit_role(qso_id, new_pota_role)
+                    db.pota.set_role(qso_id, new_pota_role)
 
             else:  # remove from pota log
-                pota_del_qso(qso_id)
+                db.pota.delete(qso_id)
 
         # new pota log
         elif hidden_keys.get("log_pota") == "yes":
@@ -368,22 +354,22 @@ def confirm_qsl():
             park_string = hidden_keys.get("park_numbers")
             role = hidden_keys.get("pota_role")
 
-            pota_mark_qso(qso_id, role)
+            db.pota.set_role(qso_id, role)
 
             if park_string is not None:
                 parks = park_string.split(",")
                 parks = [park.strip() for park in parks]
-                pota_add_parks(qso_id, parks)
+                db.pota.set_parks(qso_id, parks)
 
     # generate QSL card using selected background
     if hidden_keys.get("backdrop") != "none":
-        add_job(qso_id, "QSL_GEN", {
+        db.job.add(qso_id, "QSL_GEN", {
             "backdrop": hidden_keys.get("backdrop"),
             "email": hidden_keys.get("email")
         })
 
     if hidden_keys.get('send_qsl') == "yes":
-        add_job(qso_id, "QSL_SEND")
+        db.job.add(qso_id, "QSL_SEND")
 
     # only fires when editing an existing QSO
     qso["Freq"] = adjusted_freq
@@ -392,11 +378,15 @@ def confirm_qsl():
             log_id = qrz.get_qso_id(old_qso)
             qrz.delete_log_by_id(log_id)
 
-        add_job(qso_id, "QRZ_LOG")
+        db.job.add(qso_id, "QRZ_LOG")
 
     flash("QSO processed successfully", "success")
     return redirect(url_for("index", callsign=qso["With"]))
 
+
+@app.route("/chart", methods=["GET"])
+def chart():
+    return render_template("chart.html")
 
 @app.route("/API/v1", methods=["POST"])
 def api():
@@ -415,13 +405,13 @@ def api():
         if item == "QSL":
             return (
                 qsl_status_text(
-                    get_job_status(id, "QSL_GEN"),
-                    get_job_status(id, "QSL_SEND")
+                    db.job.get_status(id, "QSL_GEN"),
+                    db.job.get_status(id, "QSL_SEND")
                 ),
                 200
             )
         elif item == "QRZ":
-            job_status = get_job_status(id, "QRZ_LOG")
+            job_status = db.job.get_status(id, "QRZ_LOG")
             if job_status is None:
                 return ("None", 200)
 

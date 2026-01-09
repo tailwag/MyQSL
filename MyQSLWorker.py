@@ -1,31 +1,22 @@
-
 import time
 import json
 import traceback
 
-from MyQSL.dbhandler import (
-    fetch_next_job,
-    mark_job_done,
-    mark_job_failed,
-    get_qso_by_id,
-    update_job_status,
-    get_gen_job
-)
 from MyQSL.CardGen import genCard
 from MyQSL.O365_Send import sendMessage
 from MyQSL.QRZ import QRZClient
 from MyQSL.config import get_config
+from MyQSL.dbhandler import Db
 
 qrz = QRZClient()
+db = Db(get_config("Settings/Database/DBPath"))
 
 POLL_INTERVAL = 2  # seconds
 
-
 def process_qsl_gen(job):
-    qso = get_qso_by_id(job["qso_id"])
+    qso = db.qso.get_by_id(job["qso_id"])
     payload = json.loads(job["payload_json"])
     qslinfo = json.loads(qso["payload_json"])
-
 
     backdrop = payload.get("backdrop")
     email = payload.get("email")
@@ -38,7 +29,7 @@ def process_qsl_gen(job):
         get_config("Settings/QSLCard/BackdropPath") + backdrop
     )
 
-    update_job_status(job["id"], "done", payload_json=json.dumps(payload))    # enqueue SEND job
+    db.job.set_status(job["id"], "done", payload_json=json.dumps(payload))    # enqueue SEND job
 
 
 def process_qsl_send(job):
@@ -46,7 +37,7 @@ def process_qsl_send(job):
 
     try:
         # Look for the completed QSL_GEN job for the same QSO
-        gen_job = get_gen_job(qso_id)
+        gen_job = db.job.get_gen(qso_id)
         if not gen_job:
             # Card not ready yet, skip
             print(f"No generated card yet for QSO {qso_id}, will retry")
@@ -68,16 +59,16 @@ def process_qsl_send(job):
         )
 
         # Update job as done
-        update_job_status(job["id"], "done")
+        db.job.set_status(job["id"], "done")
         print(f"QSL_SEND completed for QSO {qso_id}")
 
     except Exception as e:
-        update_job_status(job["id"], "failed", last_error=str(e))
+        db.job.set_status(job["id"], "failed", last_error=str(e))
         print(f"QSL_SEND failed for QSO {qso_id}: {e}")
 
 
 def process_qrz_log(job):
-    qso = get_qso_by_id(job["qso_id"])
+    qso = db.qso.get_by_id(job["qso_id"])
     payload = json.loads(qso["payload_json"])
 
     qrz.log_qso(payload)
@@ -94,7 +85,7 @@ def worker_loop():
     print("MyQSL worker started")
 
     while True:
-        job = fetch_next_job()
+        job = db.job.get_next()
 
         if not job:
             time.sleep(POLL_INTERVAL)
@@ -106,11 +97,11 @@ def worker_loop():
                 raise ValueError(f"Unknown job type {job['job_type']}")
 
             handler(job)
-            mark_job_done(job["id"])
+            db.job.mark_done(job["id"])
 
         except Exception as e:
             traceback.print_exc()
-            mark_job_failed(job["id"], str(e))
+            db.job.mark_failed(job["id"], str(e))
 
 
 if __name__ == "__main__":
