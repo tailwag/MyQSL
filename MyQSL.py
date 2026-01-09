@@ -152,6 +152,7 @@ def delete_qso(qso_id):
 
         if post_qso.get("qso_id") is not None:
             db.qso.delete(post_qso.get("qso_id"))
+            db.job.delete_qso(post_qso.get("qso_id"))
             db.pota.delete(post_qso.get("qso_id"))
 
         if post_qso.get("__remove_qrz") == "on":

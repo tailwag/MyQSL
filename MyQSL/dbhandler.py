@@ -226,6 +226,22 @@ class Job:
         conn.commit()
         conn.close()
 
+    def delete_qso(self, qso_id):
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            DELETE FROM jobs WHERE qso_id = ?
+            """,
+            (
+                qso_id,
+            )
+        )
+
+        conn.commit()
+        conn.close()
+
     def get_next(self):
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
