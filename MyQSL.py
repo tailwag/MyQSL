@@ -387,7 +387,14 @@ def confirm_qsl():
 
 @app.route("/chart", methods=["GET"])
 def chart():
-    return render_template("chart.html")
+    modes = db.stats.modes()
+    bands = db.stats.bands()
+
+    return render_template(
+        "chart.html",
+        modes=modes,
+        bands=bands
+    )
 
 @app.route("/API/v1", methods=["POST"])
 def api():

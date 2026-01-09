@@ -1,6 +1,7 @@
 import os
 import json
 import sqlite3
+from collections import Counter
 
 class QsoMeta:
     def __init__(self, parent):
@@ -368,6 +369,46 @@ class Pota:
             parks_string = json.dumps(parks)
             self.parent.qso.tag.set(qso_id, 'pota_parks', parks_string)
 
+class Stats:
+    def __init__(self, parent):
+        self.parent = parent
+        self.db_path = self.parent.db_path
+
+    def total_qsos(self):
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.cursor()
+
+        count = cur.execute("SELECT COUNT(*) FROM qsos").fetchone()
+
+        return count[0]
+
+    def cards_sent(self):
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.cursor()
+
+        count = cur.execute("SELECT COUNT(*) FROM jobs WHERE job_type = 'QSL_SEND' AND status = 'done'").fetchone()
+
+        return count[0]
+
+    def bands(self):
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.cursor()
+
+        ret = cur.execute("SELECT band FROM qsos").fetchall()
+        ret = [val[0] for val in ret]
+
+        return Counter(ret)
+
+    def modes(self):
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.cursor()
+
+        ret = cur.execute("SELECT mode FROM qsos").fetchall()
+        ret = [val[0] for val in ret]
+
+        return Counter(ret)
+
+
 
 class Db:
     def __init__(self, db_path):
@@ -376,6 +417,7 @@ class Db:
         self.qso = Qso(self)
         self.job = Job(self)
         self.pota = Pota(self)
+        self.stats = Stats(self)
 
         conn = sqlite3.connect(self.db_path)
         cur = conn.cursor()
