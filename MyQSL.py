@@ -7,7 +7,6 @@
 
 import os
 import json
-import random
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 
 from MyQSL.CardGen import genCard
@@ -393,8 +392,6 @@ def chart():
 
     colors = get_config("Settings/Colors").split(",")
     colors = [color.strip() for color in colors]
-
-    random.shuffle(colors)
 
     return render_template(
         "chart.html",

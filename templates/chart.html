@@ -5,9 +5,32 @@ Chart Demo
 {% endblock %}
 {% block css %}
 <style>
-    div.chart-section {
-        padding: 10px;
+    .chart-section {
+        height: 300px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        flex-direction: column; /* so legend sits below chart nicely */
         border-radius: 15px;
+    }
+
+    .chart-section canvas {
+        width: 100% !important;
+        height: calc(100% - 40px); /* leave ~40px for legend */
+        max-height: 230px; /* optional: prevent it from being huge */
+    }
+    .row > .col {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+    }
+    .col > .chart-section {
+        flex: 1;
+    }
+    .col > canvas {
+        width: 100% !important;
+        height: 100% !important;
+        display: block;
     }
 </style>
 {% endblock %}
@@ -20,7 +43,7 @@ Chart Demo
             <div class="container mt-4">
                 <h5><strong>Band Stats</strong></h5>
                 <div class="row justify-content-center">
-                    <div class="col-md-6" style="max-width:400px;">
+                    <div class="col">
                         <canvas id="bandChart"></canvas>
                     </div>
                 </div>
@@ -32,8 +55,20 @@ Chart Demo
             <div class="container mt-4">
                 <h5><strong>Mode Stats</strong></h5>
                 <div class="row justify-content-center">
-                    <div class="col-md-6" style="max-width:400px;">
+                    <div class="col">
                         <canvas id="modeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="chart-section shadow">
+            <div class="container mt-4">
+                <h5><strong>Mode Stats</strong></h5>
+                <div class="row justify-content-center">
+                    <div class="col">
+                        <canvas id="testChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -44,72 +79,93 @@ Chart Demo
 {% endblock %}
 {% block js %}
 <script src="{{ url_for('static', filename='js/chart.js') }}"></script>
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>
+function bsVar(name) {
+  return getComputedStyle(document.body)
+    .getPropertyValue(name)
+    .trim();
+}
+function makeChartOptions() {
+    return {
+        cutout: '70%', // controls doughnut thickness
+        responsive: true,
+        // radius: '90%',
+        radius: ctx => Math.min(ctx.chart.width, ctx.chart.height) / 2 * 0.8,
+        maintainAspectRatio: false,
+        layout: { padding: { bottom: 0 } },
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: bsVar('--bs-body-color'),
+                    font: { size: 14 },
+                    usePointStyle: true,
+                    boxWidth: 12
+                }
+            },
+            tooltip: {
+                backgroundColor: bsVar('--bs-body-bg'),
+                titleColor: bsVar('--bs-body-color'),
+                bodyColor: bsVar('--bs-body-color')
+            }
+        }
+    };
+}
+
 const ctx = document.getElementById('bandChart');
-new Chart(ctx, {
+const bandChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
-        labels: [
-            {% for k, v in bands.items() %}
-            '{{ k }}',
-            {% endfor %}
-        ],
+        labels: [ {% for k, v in bands.items() %} '{{ k }}', {% endfor %} ],
         datasets: [{
-            data: [
-                {% for k, v in bands.items() %}
-                {{ v }},
-                {% endfor %}
-            ],
-            backgroundColor: [
-                {% for k, v in bands.items() %}
-                '{{ colors[loop.index0] }}',
-                {% endfor %}
-            ],
+            data: [ {% for k, v in bands.items() %} {{ v }}, {% endfor %} ],
+            backgroundColor: [ {% for k, v in bands.items() %} '{{ colors[loop.index0] }}', {% endfor %} ],
             borderWidth: 0
         }]
     },
-    options: {
-        cutout: '70%', // controls doughnut thickness
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'bottom'
-            }
-        }
-    }
+    options: makeChartOptions()
 });
+
 const cty = document.getElementById('modeChart');
-new Chart(cty, {
+const modeChart = new Chart(cty, {
     type: 'doughnut',
     data: {
-        labels: [
-            {% for k, v in modes.items() %}
-            '{{ k }}',
-            {% endfor %}
-        ],
+        labels: [ {% for k, v in modes.items() %} '{{ k }}', {% endfor %} ],
         datasets: [{
-            data: [
-                {% for k, v in modes.items() %}
-                {{ v }},
-                {% endfor %}
-            ],
-            backgroundColor: [
-                {% for k, v in modes.items() %}
-                '{{ colors[loop.index0] }}',
-                {% endfor %}
-            ],
+            data: [ {% for k, v in modes.items() %} {{ v }}, {% endfor %} ],
+            backgroundColor: [ {% for k, v in modes.items() %} '{{ colors[loop.index0] }}', {% endfor %} ],
             borderWidth: 0
         }]
     },
-    options: {
-        cutout: '70%', // controls doughnut thickness
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'bottom'
-            }
-        }
-    }
+    options: makeChartOptions()
 });
+
+const ctz = document.getElementById('testChart');
+const testChart = new Chart(ctz, {
+    type: 'doughnut',
+    data: {
+        labels: [ {% for k, v in modes.items() %} '{{ k }}', {% endfor %} ],
+        datasets: [{
+            data: [ {% for k, v in modes.items() %} {{ v }}, {% endfor %} ],
+            backgroundColor: [ {% for k, v in modes.items() %} '{{ colors[loop.index0] }}', {% endfor %} ],
+            borderWidth: 0
+        }]
+    },
+    options: makeChartOptions()
+});
+
+const observer = new MutationObserver(() => {
+    [bandChart, modeChart, testChart].forEach(chart => {
+        chart.options.plugins.legend.labels.color = bsVar('--bs-body-color');
+        chart.options.plugins.tooltip.titleColor = bsVar('--bs-body-color');
+        chart.options.plugins.tooltip.bodyColor = bsVar('--bs-body-color');
+        chart.options.plugins.tooltip.backgroundColor = bsVar('--bs-body-bg');
+        chart.update();
+    });
+});
+
+observer.observe(document.body, { attributes: true, attributeFilter: ['data-bs-theme'] });
+
 </script>
 {% endblock %}

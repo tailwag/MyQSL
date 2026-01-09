@@ -397,7 +397,9 @@ class Stats:
         ret = cur.execute("SELECT band FROM qsos").fetchall()
         ret = [val[0] for val in ret]
 
-        return Counter(ret)
+        sorted_bands = dict(sorted(Counter(ret).items(), reverse=False))
+
+        return sorted_bands
 
     def modes(self):
         conn = sqlite3.connect(self.db_path)
@@ -406,7 +408,9 @@ class Stats:
         ret = cur.execute("SELECT mode FROM qsos").fetchall()
         ret = [val[0] for val in ret]
 
-        return Counter(ret)
+        sorted_modes = dict(sorted(Counter(ret).items(), reverse=False))
+
+        return sorted_modes
 
 
 
