@@ -2,6 +2,7 @@ import os
 import json
 import sqlite3
 from collections import Counter
+from datetime import datetime, timezone, timedelta
 
 class QsoMeta:
     def __init__(self, parent):
@@ -412,6 +413,30 @@ class Stats:
 
         return sorted_modes
 
+    def qsos_by_day(self, history):
+        now = datetime.now(timezone.utc)
+
+        dates = [ (now - timedelta(days=i)).date() for i in reversed(range(history + 1)) ]
+
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.cursor()
+
+        date_stats = {}
+        for date in dates:
+            date_string = str(date.strftime("%Y-%m-%d"))
+            print(date_string)
+            date_stats[date_string] = cur.execute(
+                """
+                SELECT COUNT(*) FROM qsos WHERE qso_date IS ?
+                """,
+                (
+                    date_string,
+                )
+            ).fetchone()[0]
+
+        conn.close()
+
+        return date_stats
 
 
 class Db:

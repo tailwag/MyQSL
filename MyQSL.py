@@ -387,8 +387,24 @@ def confirm_qsl():
 
 @app.route("/chart", methods=["GET"])
 def chart():
+    if request.method == "POST":
+        callsign = request.form.get("callsign", "").upper()
+        if callsign:
+            return redirect(url_for("lookup", callsign=callsign))
+
+    num_qsos = int(get_config("Settings/QSOHistory"))
+    qsos = db.qso.get(num_qsos)
+
+    qso_dicts = []
+
+    for qso in qsos:
+        row = dict(qso)
+        row['qsl_status'], row['qrz_status'] = get_status_texts(qso.get('id'))
+        qso_dicts.append(row)
+
     modes = db.stats.modes()
     bands = db.stats.bands()
+    dates = db.stats.qsos_by_day(7)
 
     colors = get_config("Settings/Colors").split(",")
     colors = [color.strip() for color in colors]
@@ -397,7 +413,9 @@ def chart():
         "chart.html",
         colors=colors,
         modes=modes,
-        bands=bands
+        bands=bands,
+        dates=dates,
+        qsolog=qso_dicts
     )
 
 @app.route("/API/v1", methods=["POST"])

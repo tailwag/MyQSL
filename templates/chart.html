@@ -19,6 +19,12 @@ Chart Demo
         height: calc(100% - 40px); /* leave ~40px for legend */
         max-height: 230px; /* optional: prevent it from being huge */
     }
+
+    .chart-section h5 {
+        position: relative;
+        left: 25px;
+        top: 10px;
+    }
     .row > .col {
         display: flex;
         align-items: flex-start;
@@ -32,40 +38,81 @@ Chart Demo
         height: 100% !important;
         display: block;
     }
+
+    .qso-table {
+        padding-left: 15px;
+        padding-right: 15px;
+        border-radius: 15px;
+    }
 </style>
 {% endblock %}
 {% block bar %}
+<div class="search-container">
+    <form method="post" class="w-100">
+        <div class="input-group">
+            <input id="callsign-search" type="text" name="callsign" class="form-control" placeholder="Enter callsign..." required>
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+</div>
 {% endblock %}
 {% block content %}
-<div class="row">
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+<div class="row mt-4">
     <div class="col">
         <div class="chart-section shadow">
+            <h5><strong>QSOs by Day</strong></h5>
+            <div class="container mt-2">
+                <canvas id="lineChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <!--
+    <div class="col col-lg-4">
+        <div class="chart-section shadow">
+            <div class="container mt-2">
+                <div class="row">
+                    <strong>KD8VCP</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+    -->
+</div>
+<div class="row mt-4">
+    <div class="col">
+        <div class="chart-section shadow">
+            <h5><strong>Band Stats</strong></h5>
             <div class="container mt-4">
-                <h5><strong>Band Stats</strong></h5>
-                <div class="row justify-content-center">
-                    <div class="col">
-                        <canvas id="bandChart"></canvas>
-                    </div>
+                <div class="col">
+                    <canvas id="bandChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
     <div class="col">
         <div class="chart-section shadow">
+            <h5><strong>Mode Stats</strong></h5>
             <div class="container mt-4">
-                <h5><strong>Mode Stats</strong></h5>
-                <div class="row justify-content-center">
-                    <div class="col">
-                        <canvas id="modeChart"></canvas>
-                    </div>
+                <div class="col">
+                    <canvas id="modeChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
     <div class="col">
         <div class="chart-section shadow">
+            <h5><strong>Mode Stats</strong></h5>
             <div class="container mt-4">
-                <h5><strong>Mode Stats</strong></h5>
                 <div class="row justify-content-center">
                     <div class="col">
                         <canvas id="testChart"></canvas>
@@ -75,9 +122,68 @@ Chart Demo
         </div>
     </div>
 </div>
-
+<br><br>
+<div class="qso-table shadow">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Callsign</th>
+                <th scope="col">Date</th>
+                <th scope="col">Time</th>
+                <th scope="col">Band</th>
+                <th scope="col">Mode</th>
+                <th scope="col">Freq</th>
+                <th scope="col">RSTS</th>
+                <th scope="col">RSTR</th>
+                <th scope="col">Card Status</th>
+                <th scope="col">QRZ Status</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for qso in qsolog %}
+            <tr>
+                <th scope="row">{{ qso.id }}</th>
+                <td>{{ qso.callsign }}</td>
+                <td>{{ qso.qso_date }}</td>
+                <td>{{ qso.time_on }}</td>
+                <td>{{ qso.band }}</td>
+                <td>{{ qso.mode }}</td>
+                <td>{{ qso.freq }}</td>
+                <td>{{ qso.rsts }}</td>
+                <td>{{ qso.rstr }}</td>
+                <td
+                    class="status-cell"
+                    data-qso-id="{{ qso.id }}"
+                    data-item="QSL"
+                    data-active="1"
+                >
+                    {{ qso.qsl_status }}
+                </td>
+                <td
+                    class="status-cell"
+                    data-qso-id="{{ qso.id }}"
+                    data-item="QRZ"
+                    data-active="1"
+                >
+                    {{ qso.qrz_status }}
+                </td>
+                <td>
+                    <div>
+                        <a href="edit/{{ qso.id }}"><i class="bi bi-pencil-square"></i></a>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <a href="delete/{{ qso.id }}"><i class="bi bi-trash"></i></a>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
 {% block js %}
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <script src="{{ url_for('static', filename='js/chart.js') }}"></script>
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>
@@ -112,6 +218,40 @@ function makeChartOptions() {
         }
     };
 }
+
+const lineCtx = document.getElementById('lineChart');
+const lineChart = new Chart(lineCtx, {
+    type: 'line',
+    data: {
+        labels: [ {% for d in dates %} '{{ d }}', {% endfor %} ], // x-axis labels
+        datasets: [{
+            data: [ {% for k, v in dates.items() %} {{ v }}, {% endfor %} ], // y-axis data
+            borderColor: bsVar('--bs-primary'),
+            backgroundColor: 'rgba(0,0,0,0)', // no fill
+            tension: 0.3, // smooth line
+            pointRadius: 4,
+            pointHoverRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: bsVar('--bs-body-bg'),
+                titleColor: bsVar('--bs-body-color'),
+                bodyColor: bsVar('--bs-body-color')
+            }
+        },
+        scales: {
+            x: { ticks: { color: bsVar('--bs-body-color') } },
+            y: { ticks: { color: bsVar('--bs-body-color') } }
+        }
+    }
+});
 
 const ctx = document.getElementById('bandChart');
 const bandChart = new Chart(ctx, {
