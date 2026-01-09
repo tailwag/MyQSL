@@ -4,46 +4,112 @@
 Chart Demo
 {% endblock %}
 {% block css %}
+<style>
+    div.chart-section {
+        padding: 10px;
+        border-radius: 15px;
+    }
+</style>
 {% endblock %}
 {% block bar %}
 {% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-6" style="max-width:400px;">
-            <canvas id="myChart"></canvas>
+<div class="row">
+    <div class="col">
+        <div class="chart-section shadow">
+            <div class="container mt-4">
+                <h5><strong>Band Stats</strong></h5>
+                <div class="row justify-content-center">
+                    <div class="col-md-6" style="max-width:400px;">
+                        <canvas id="bandChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="chart-section shadow">
+            <div class="container mt-4">
+                <h5><strong>Mode Stats</strong></h5>
+                <div class="row justify-content-center">
+                    <div class="col-md-6" style="max-width:400px;">
+                        <canvas id="modeChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
 {% block js %}
 <script src="{{ url_for('static', filename='js/chart.js') }}"></script>
 <script>
-const ctx = document.getElementById('myChart');
-
+const ctx = document.getElementById('bandChart');
 new Chart(ctx, {
-  type: 'doughnut',
-  data: {
-    labels: ['Red', 'Blue', 'Yellow'],
-    datasets: [{
-      data: [30, 45, 25],
-      backgroundColor: [
-        '#dc3545', // Bootstrap danger
-        '#0d6efd', // Bootstrap primary
-        '#ffc107'  // Bootstrap warning
-      ],
-      borderWidth: 0
-    }]
-  },
-  options: {
-    cutout: '70%', // controls doughnut thickness
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'bottom'
-      }
+    type: 'doughnut',
+    data: {
+        labels: [
+            {% for k, v in bands.items() %}
+            '{{ k }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for k, v in bands.items() %}
+                {{ v }},
+                {% endfor %}
+            ],
+            backgroundColor: [
+                {% for k, v in bands.items() %}
+                '{{ colors[loop.index0] }}',
+                {% endfor %}
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        cutout: '70%', // controls doughnut thickness
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
     }
-  }
+});
+const cty = document.getElementById('modeChart');
+new Chart(cty, {
+    type: 'doughnut',
+    data: {
+        labels: [
+            {% for k, v in modes.items() %}
+            '{{ k }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for k, v in modes.items() %}
+                {{ v }},
+                {% endfor %}
+            ],
+            backgroundColor: [
+                {% for k, v in modes.items() %}
+                '{{ colors[loop.index0] }}',
+                {% endfor %}
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        cutout: '70%', // controls doughnut thickness
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
 });
 </script>
 {% endblock %}
