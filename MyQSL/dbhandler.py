@@ -424,7 +424,6 @@ class Stats:
         date_stats = {}
         for date in dates:
             date_string = str(date.strftime("%Y-%m-%d"))
-            print(date_string)
             date_stats[date_string] = cur.execute(
                 """
                 SELECT COUNT(*) FROM qsos WHERE qso_date IS ?

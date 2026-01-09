@@ -4,47 +4,6 @@
 Chart Demo
 {% endblock %}
 {% block css %}
-<style>
-    .chart-section {
-        height: 300px;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        flex-direction: column; /* so legend sits below chart nicely */
-        border-radius: 15px;
-    }
-
-    .chart-section canvas {
-        width: 100% !important;
-        height: calc(100% - 40px); /* leave ~40px for legend */
-        max-height: 230px; /* optional: prevent it from being huge */
-    }
-
-    .chart-section h5 {
-        position: relative;
-        left: 25px;
-        top: 10px;
-    }
-    .row > .col {
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-    }
-    .col > .chart-section {
-        flex: 1;
-    }
-    .col > canvas {
-        width: 100% !important;
-        height: 100% !important;
-        display: block;
-    }
-
-    .qso-table {
-        padding-left: 15px;
-        padding-right: 15px;
-        border-radius: 15px;
-    }
-</style>
 {% endblock %}
 {% block bar %}
 <div class="search-container">
@@ -82,8 +41,13 @@ Chart Demo
         <div class="chart-section shadow">
             <h5><strong>Band Stats</strong></h5>
             <div class="container mt-4">
-                <div class="col">
-                    <canvas id="bandChart"></canvas>
+                <div class="chart-wrapper">
+                    <div class="chart-inner">
+                        <div class="chart-legend" id="bandLegend"></div>
+                        <div class="chart-canvas">
+                            <canvas id="bandChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -92,8 +56,13 @@ Chart Demo
         <div class="chart-section shadow">
             <h5><strong>Mode Stats</strong></h5>
             <div class="container mt-4">
-                <div class="col">
-                    <canvas id="modeChart"></canvas>
+                <div class="chart-wrapper">
+                    <div class="chart-inner">
+                        <div class="chart-legend" id="modeLegend"></div>
+                        <div class="chart-canvas">
+                            <canvas id="modeChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -102,9 +71,12 @@ Chart Demo
         <div class="chart-section shadow">
             <h5><strong>Card Stats</strong></h5>
             <div class="container mt-4">
-                <div class="row justify-content-center">
-                    <div class="col">
-                        <canvas id="cardChart"></canvas>
+                <div class="chart-wrapper">
+                    <div class="chart-inner">
+                        <div class="chart-legend" id="cardLegend"></div>
+                        <div class="chart-canvas">
+                            <canvas id="cardChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -185,20 +157,12 @@ function makeChartOptions() {
     return {
         cutout: '70%', // controls doughnut thickness
         responsive: true,
-        // radius: '90%',
-        radius: ctx => Math.min(ctx.chart.width, ctx.chart.height) / 2 * 0.8,
+        radius: ctx =>
+            Math.min(ctx.chart.width, ctx.chart.height) / 2 * 0.8,
         maintainAspectRatio: false,
         layout: { padding: { bottom: 0 } },
         plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    color: bsVar('--bs-body-color'),
-                    font: { size: 14 },
-                    usePointStyle: true,
-                    boxWidth: 12
-                }
-            },
+            legend: { display: false },
             tooltip: {
                 backgroundColor: bsVar('--bs-body-bg'),
                 titleColor: bsVar('--bs-body-color'),
@@ -255,6 +219,7 @@ const bandChart = new Chart(ctx, {
     },
     options: makeChartOptions()
 });
+buildLegend(bandChart, document.getElementById('bandLegend'));
 
 const cty = document.getElementById('modeChart');
 const modeChart = new Chart(cty, {
@@ -269,6 +234,7 @@ const modeChart = new Chart(cty, {
     },
     options: makeChartOptions()
 });
+buildLegend(modeChart, document.getElementById('modeLegend'));
 
 const ctz = document.getElementById('cardChart');
 const cardChart = new Chart(ctz, {
@@ -283,6 +249,7 @@ const cardChart = new Chart(ctz, {
     },
     options: makeChartOptions()
 });
+buildLegend(cardChart, document.getElementById('cardLegend'));
 
 const observer = new MutationObserver(() => {
     [bandChart, modeChart, cardChart].forEach(chart => {
@@ -293,6 +260,16 @@ const observer = new MutationObserver(() => {
         chart.update();
     });
 });
+
+function buildLegend(chart, el) {
+    el.innerHTML = chart.data.labels.map((label, i) => `
+        <span class="legend-item">
+            <span class="legend-dot"
+                  style="background:${chart.data.datasets[0].backgroundColor[i]}"></span>
+            ${label}
+        </span>
+    `).join('');
+}
 
 observer.observe(document.body, { attributes: true, attributeFilter: ['data-bs-theme'] });
 
