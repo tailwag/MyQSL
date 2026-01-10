@@ -104,6 +104,26 @@ def get_keys(main_dict, prefix):
     return new_dict
 
 
+def card_path_from_adif(qso):
+    # CALL
+    # QSO_DATE 20260101
+    # TIME_ON
+    call = qso.get("CALL")
+    date = qso.get("QSO_DATE")
+    time = qso.get("TIME_ON")
+
+    if call is None or date is None or time is None:
+        return None
+
+    date = str(date)
+    time = str(time)
+    date = date[:4] + "-" + date[4:6] + "-" + date[6:8]
+
+    card_name = "qslcard_" + call + "_" + date + "_" + time + "_UTC.jpg"
+
+    return 'static/img/' + card_name
+
+
 ######################################################################
 # Flask routes                                                       #
 ######################################################################
@@ -193,6 +213,15 @@ def lookup(callsign):
             rawfreq = qso.get("FREQ")
             if rawfreq:
                 qso["FREQ"] = format_mhz(rawfreq)
+
+            card_path = card_path_from_adif(qso)
+
+            if card_path is None:
+                continue
+
+            if os.path.isfile(card_path):
+                qso["CARD_PATH"] = card_path
+
 
     qslInfo = {
         "With": callsign,

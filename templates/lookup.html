@@ -65,6 +65,9 @@
                             <li style="font-family:JetBrainsMono Nerd Font">
                                 {{ qso.QSO_DATE[:4] }}-{{ qso.QSO_DATE[4:6] }}-{{ qso.QSO_DATE[6:8] }} {{ qso.TIME_ON }} UTC —
                                 {{ qso.BAND }} {{ qso.MODE }} - {{ qso.FREQ }}
+                                {% if qso.CARD_PATH %}
+                                - <a href="/{{ qso.CARD_PATH }}">Card</a>
+                                {% endif %}
                             </li>
                         {% endfor %}
                     </ul>
