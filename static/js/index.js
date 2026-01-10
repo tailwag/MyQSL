@@ -48,11 +48,16 @@ function refreshStatuses() {
 // initial load
 refreshStatuses();
 
-// poll every 3 seconds
+// poll every .5 seconds
 setInterval(refreshStatuses, 500);
+
 setTimeout(() => {
     document.querySelectorAll('.alert').forEach(alert => {
-      alert.classList.remove('show')
-      alert.classList.add('fade')
+        alert.classList.remove('show')
+
+        alert.addEventListener('transitionend', () => {
+            alert.remove()
+        }, { once: true })
     })
 }, 5000)
+
