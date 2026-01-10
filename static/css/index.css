@@ -1,0 +1,83 @@
+.chart-section {
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+    border-radius: 15px;
+}
+
+.chart-section canvas {
+    width: 100% !important;
+    height: calc(100% - 40px);
+    max-height: 230px;
+}
+
+.chart-section h5 {
+    position: relative;
+    left: 25px;
+    top: 10px;
+}
+
+.row > .col {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+.col > .chart-section {
+    flex: 1;
+}
+.col > canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
+.qso-table {
+    padding-left: 15px;
+    padding-right: 15px;
+    border-radius: 15px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.chart-wrapper {
+    height: 100%;
+}
+
+.chart-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.chart-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    min-width: 90px;
+}
+
+.chart-canvas {
+    flex: 1;
+    max-width: 240px;
+}
+
+.chart-canvas canvas {
+    width: 100% !important;
+    height: auto !important;
+}
+
