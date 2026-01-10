@@ -65,7 +65,12 @@ function setFreqPrecision() {
 
     var frmtFreq = freq.toFixed(3);
 
-    if (freq > parseFloat(frmtFreq))
+    console.log("freq")
+    console.log(freq)
+    console.log("frmtFreq")
+    console.log(frmtFreq)
+
+    if (freq != parseFloat(frmtFreq))
         frmtFreq = freq;
 
     if (!isNaN(frmtFreq))
