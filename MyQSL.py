@@ -290,7 +290,7 @@ def choose_qsl():
         if old_qso_qrz_status == "Logged":
             old_qso['qrz_logged'] = True
 
-        if bool(get_config("Settings/EnablePota")):
+        if bool(get_config("Settings/EnablePota", False)):
             old_qso["pota_role"] = db.qso.tag.get(old_qso_id, 'pota_role')
 
             if old_qso.get('pota_role') is not None:
