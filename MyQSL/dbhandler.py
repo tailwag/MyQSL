@@ -4,92 +4,108 @@ import sqlite3
 from collections import Counter
 from datetime import datetime, timezone, timedelta
 
+def set_meta_tag(db_path, table_name, id_name, id, key, value):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    count = cur.execute(
+        "SELECT COUNT(*) FROM " + table_name + " WHERE " + id_name + "=? AND key=?",
+        (
+            id,
+            key,
+        )
+    ).fetchone()
+
+    tag_exists = count[0] != 0
+
+    if tag_exists:
+        cur.execute(
+            "UPDATE " + table_name + " SET value=?, updated_at=DATETIME('now') WHERE " + id_name + "=? AND key=?",
+            (
+                value,
+                id,
+                key
+            )
+        )
+
+    else:
+        cur.execute(
+            "INSERT INTO " + table_name + " (" + id_name + ", key, value) VALUES (?, ?, ?)",
+            (
+                id,
+                key,
+                value
+            )
+        )
+
+    conn.commit()
+    conn.close()
+
+
+def get_meta_tag(db_path, table_name, id_name, id, key):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT value FROM " + table_name + " WHERE " + id_name + " IS ? AND key IS ?",
+        (
+            id,
+            key
+        )
+    )
+    result = cur.fetchone()
+
+    conn.close()
+    if result is None:
+        return None
+
+    return result[0]
+
+
+def del_meta_tag(db_path, table_name, id_name, id, key):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute(
+        "DELETE FROM " + table_name + " WHERE " + id_name + " IS ? AND key IS ?",
+        (
+            id,
+            key,
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+
 class QsoMeta:
     def __init__(self, parent):
         self.parent = parent
         self.db_path = self.parent.db_path
 
     def set(self, qso_id, key, value):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-
-        count = cur.execute(
-            """
-            SELECT COUNT(*) FROM qso_meta WHERE qso_id=? AND key=?
-            """,
-            (
-                qso_id,
-                key,
-            )
-        ).fetchone()
-
-        tag_exists = count[0] != 0
-
-        if tag_exists:
-            cur.execute (
-                """
-                UPDATE qso_meta SET value=?
-                WHERE qso_id=? AND key=?
-                """,
-                (
-                    value,
-                    qso_id,
-                    key
-                )
-            )
-        else:
-            cur.execute(
-                """
-                INSERT INTO qso_meta (qso_id, key, value)
-                VALUES (?, ?, ?)
-                """,
-                (
-                    qso_id,
-                    key,
-                    value
-                )
-            )
-
-        conn.commit()
-        conn.close()
+        set_meta_tag(self.db_path, 'qso_meta', 'qso_id', qso_id, key, value)
 
     def get(self, qso_id, key):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-
-        cur.execute(
-            """
-            SELECT value FROM qso_meta WHERE qso_id IS ? AND key IS ?
-            """,
-            (
-                qso_id,
-                key
-            )
-        )
-        result = cur.fetchone()
-
-        conn.close()
-        if result is None:
-            return None
-
-        return result[0]
+        return get_meta_tag(self.db_path, 'qso_meta', 'qso_id', qso_id, key)
 
     def delete(self, qso_id, key):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
+        del_meta_tag(self.db_path, 'qso_meta', 'qso_id', qso_id, key)
 
-        cur.execute(
-            """
-            DELETE FROM qso_meta WHERE qso_id IS ? AND key IS ?
-            """,
-            (
-                qso_id,
-                key,
-            )
-        )
 
-        conn.commit()
-        conn.close()
+class ContactMeta:
+    def __init__(self, parent):
+        self.parent = parent
+        self.db_path = self.parent.db_path
+
+    def set(self, callsign, key, value):
+        set_meta_tag(self.db_path, 'contact_meta', 'callsign', callsign, key, value)
+
+    def get(self, callsign, key):
+        return get_meta_tag(self.db_path, 'contact_meta', 'callsign', callsign, key)
+
+    def delete(self, callsign, key):
+        del_meta_tag(self.db_path, 'contact_meta', 'callsign', callsign, key)
 
 
 class Qso:
@@ -200,6 +216,13 @@ class Qso:
 
         conn.close()
         return dict(row)
+
+
+class Contact:
+    def __init__(self, parent):
+        self.parent = parent
+        self.db_path = self.parent.db_path
+        self.tag = ContactMeta(self)
 
 
 class Job:
@@ -370,6 +393,7 @@ class Pota:
             parks_string = json.dumps(parks)
             self.parent.qso.tag.set(qso_id, 'pota_parks', parks_string)
 
+
 class Stats:
     def __init__(self, parent):
         self.parent = parent
@@ -446,6 +470,7 @@ class Db:
         self.job = Job(self)
         self.pota = Pota(self)
         self.stats = Stats(self)
+        self.contact = Contact(self)
 
         conn = sqlite3.connect(self.db_path)
         cur = conn.cursor()
@@ -487,6 +512,16 @@ class Db:
             updated_at DATETIME,
 
             FOREIGN KEY (qso_id) REFERENCES qsos(id)
+        );
+        CREATE TABLE IF NOT EXISTS contact_meta (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            callsign TEXT NOT NULL,
+            key TEXT NOT NULL,
+            value TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME,
+
+            FOREIGN KEY (callsign) REFERENCES qsos(callsign)
         );
         CREATE TABLE IF NOT EXISTS system_jobs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
