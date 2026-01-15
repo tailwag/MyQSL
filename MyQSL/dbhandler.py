@@ -514,7 +514,7 @@ class Stats:
 
         return date_stats
 
-    def get_top_countries(self, limit):
+    def top_countries(self, limit):
         conn = sqlite3.connect(self.db_path)
         cur = conn.cursor()
 
@@ -545,7 +545,7 @@ class Stats:
 
         return result_dict
 
-    def get_top_states(self, limit):
+    def top_states(self, limit):
         conn = sqlite3.connect(self.db_path)
         cur = conn.cursor()
 
@@ -574,6 +574,34 @@ class Stats:
         for t in result:
             key = us_state_codes.get(t[0]) or t[0]
             result_dict[key] = t[1]
+
+        return result_dict
+
+    def top_stations(self, limit):
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.cursor()
+
+        result = cur.execute(
+            """
+            SELECT
+                callsign,
+                COUNT(*) AS qso_count
+            FROM qsos
+            GROUP BY callsign
+            ORDER BY qso_count DESC
+            LIMIT ?
+            """,
+            (
+                limit,
+            )
+        ).fetchall()
+
+        conn.close()
+
+        result_dict = {}
+
+        for t in result:
+            result_dict[t[0]] = t[1]
 
         return result_dict
 

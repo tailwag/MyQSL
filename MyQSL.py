@@ -152,6 +152,10 @@ def index():
     total_qsos = db.stats.total_qsos()
     cards_sent = db.stats.cards_sent()
 
+    countries = db.stats.top_countries(6)
+    states = db.stats.top_states(6)
+    stations = db.stats.top_stations(6)
+
     colors = get_config("Settings/Colors").split(",")
     colors = [color.strip() for color in colors]
 
@@ -163,7 +167,10 @@ def index():
         dates=dates,
         qsolog=qso_dicts,
         total_qsos=total_qsos,
-        cards_sent=cards_sent
+        cards_sent=cards_sent,
+        countries=countries,
+        states=states,
+        stations=stations
     )
 
 

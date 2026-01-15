@@ -40,7 +40,7 @@ MyQSL
 <div class="row mt-4">
     <div class="col">
         <div class="chart-section shadow">
-            <h5><strong>Band Stats</strong></h5>
+            <h5><strong>Top Bands</strong></h5>
             <div class="container mt-4">
                 <div class="chart-wrapper">
                     <div class="chart-inner">
@@ -55,7 +55,7 @@ MyQSL
     </div>
     <div class="col">
         <div class="chart-section shadow">
-            <h5><strong>Mode Stats</strong></h5>
+            <h5><strong>Top Modes</strong></h5>
             <div class="container mt-4">
                 <div class="chart-wrapper">
                     <div class="chart-inner">
@@ -77,6 +77,53 @@ MyQSL
                         <div class="chart-legend" id="cardLegend"></div>
                         <div class="chart-canvas">
                             <canvas id="cardChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mt-4">
+    <div class="col">
+        <div class="chart-section shadow">
+            <h5><strong>Top Countries</strong></h5>
+            <div class="container mt-4">
+                <div class="chart-wrapper">
+                    <div class="chart-inner">
+                        <div class="chart-legend" id="countryLegend"></div>
+                        <div class="chart-canvas">
+                            <canvas id="countryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="chart-section shadow">
+            <h5><strong>Top States</strong></h5>
+            <div class="container mt-4">
+                <div class="chart-wrapper">
+                    <div class="chart-inner">
+                        <div class="chart-legend" id="stateLegend"></div>
+                        <div class="chart-canvas">
+                            <canvas id="stateChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="chart-section shadow">
+            <h5><strong>Top Stations</strong></h5>
+            <div class="container mt-4">
+                <div class="chart-wrapper">
+                    <div class="chart-inner">
+                        <div class="chart-legend" id="stationLegend"></div>
+                        <div class="chart-canvas">
+                            <canvas id="stationChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -251,6 +298,51 @@ const cardChart = new Chart(ctz, {
     options: makeChartOptions()
 });
 buildLegend(cardChart, document.getElementById('cardLegend'));
+
+const ctc = document.getElementById('countryChart');
+const countryChart = new Chart(ctc, {
+    type: 'doughnut',
+    data: {
+        labels: [ {% for k, v in countries.items() %} '{{ k }}', {% endfor %} ],
+        datasets: [{
+            data: [ {% for k, v in countries.items() %} {{ v }}, {% endfor %} ],
+            backgroundColor: [ {% for k, v in countries.items() %} '{{ colors[loop.index0] }}', {% endfor %} ],
+            borderWidth: 0
+        }]
+    },
+    options: makeChartOptions()
+});
+buildLegend(countryChart, document.getElementById('countryLegend'));
+
+const cts = document.getElementById('stateChart');
+const stateChart = new Chart(cts, {
+    type: 'doughnut',
+    data: {
+        labels: [ {% for k, v in states.items() %} '{{ k }}', {% endfor %} ],
+        datasets: [{
+            data: [ {% for k, v in states.items() %} {{ v }}, {% endfor %} ],
+            backgroundColor: [ {% for k, v in states.items() %} '{{ colors[loop.index0] }}', {% endfor %} ],
+            borderWidth: 0
+        }]
+    },
+    options: makeChartOptions()
+});
+buildLegend(stateChart, document.getElementById('stateLegend'));
+
+const cti = document.getElementById('stationChart');
+const stationChart = new Chart(cti, {
+    type: 'doughnut',
+    data: {
+        labels: [ {% for k, v in stations.items() %} '{{ k }}', {% endfor %} ],
+        datasets: [{
+            data: [ {% for k, v in stations.items() %} {{ v }}, {% endfor %} ],
+            backgroundColor: [ {% for k, v in stations.items() %} '{{ colors[loop.index0] }}', {% endfor %} ],
+            borderWidth: 0
+        }]
+    },
+    options: makeChartOptions()
+});
+buildLegend(stationChart, document.getElementById('stationLegend'));
 
 const observer = new MutationObserver(() => {
     [bandChart, modeChart, cardChart].forEach(chart => {
