@@ -66,7 +66,12 @@
                                 {{ qso.QSO_DATE[:4] }}-{{ qso.QSO_DATE[4:6] }}-{{ qso.QSO_DATE[6:8] }} {{ qso.TIME_ON }} UTC —
                                 {{ qso.BAND }} {{ qso.MODE }} - {{ qso.FREQ }}
                                 {% if qso.CARD_PATH %}
-                                - <a href="/{{ qso.CARD_PATH }}">Card</a>
+                                - <a href="/{{ qso.CARD_PATH }}"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#imageModal"
+                                    class="image-link">
+                                    Card
+                                </a>
                                 {% endif %}
                             </li>
                         {% endfor %}
@@ -189,6 +194,23 @@
                             <button class="btn btn-primary">Submit</button>
                         </form>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-body p-0 text-center position-relative">
+                    <button type="button"
+                            class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+
+                    <img id="modalImage"
+                        src=""
+                        class="img-fluid rounded"
+                        alt="Full size image">
                 </div>
             </div>
         </div>
