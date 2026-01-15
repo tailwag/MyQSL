@@ -278,6 +278,19 @@ def edit_qso(qso_id):
 
     callsign = qsodata.get("With")
     qrz_info = expand_class(qrz.lookup(callsign))
+
+
+    if qrz_info:
+        q_call = qrz_info.get('callsign')
+        q_country = qrz_info.get('country')
+        q_state = qrz_info.get('state')
+
+        if q_call is not None and q_country is not None:
+            db.contact.tag.set(q_call, 'country', q_country)
+
+            if q_state is not None:
+                db.contact.tag.set(q_call, 'state', q_state)
+
     qso_history = qrz.get_previous_qsos(callsign)
 
     if qso_history:
