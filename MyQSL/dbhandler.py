@@ -4,6 +4,59 @@ import sqlite3
 from collections import Counter
 from datetime import datetime, timezone, timedelta
 
+us_state_codes = {
+    "AL": "Alabama",
+    "AK": "Alaska",
+    "AZ": "Arizona",
+    "AR": "Arkansas",
+    "CA": "California",
+    "CO": "Colorado",
+    "CT": "Connecticut",
+    "DE": "Delaware",
+    "FL": "Florida",
+    "GA": "Georgia",
+    "HI": "Hawaii",
+    "ID": "Idaho",
+    "IL": "Illinois",
+    "IN": "Indiana",
+    "IA": "Iowa",
+    "KS": "Kansas",
+    "KY": "Kentucky",
+    "LA": "Louisiana",
+    "ME": "Maine",
+    "MD": "Maryland",
+    "MA": "Massachusetts",
+    "MI": "Michigan",
+    "MN": "Minnesota",
+    "MS": "Mississippi",
+    "MO": "Missouri",
+    "MT": "Montana",
+    "NE": "Nebraska",
+    "NV": "Nevada",
+    "NH": "New Hampshire",
+    "NJ": "New Jersey",
+    "NM": "New Mexico",
+    "NY": "New York",
+    "NC": "North Carolina",
+    "ND": "North Dakota",
+    "OH": "Ohio",
+    "OK": "Oklahoma",
+    "OR": "Oregon",
+    "PA": "Pennsylvania",
+    "RI": "Rhode Island",
+    "SC": "South Carolina",
+    "SD": "South Dakota",
+    "TN": "Tennessee",
+    "TX": "Texas",
+    "UT": "Utah",
+    "VT": "Vermont",
+    "VA": "Virginia",
+    "WA": "Washington",
+    "WV": "West Virginia",
+    "WI": "Wisconsin",
+    "WY": "Wyoming",
+}
+
 def set_meta_tag(db_path, table_name, id_name, id, key, value):
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
@@ -461,6 +514,68 @@ class Stats:
 
         return date_stats
 
+    def get_top_countries(self, limit):
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.cursor()
+
+        result = cur.execute(
+            """
+            SELECT
+                cm.value AS country,
+                COUNT(q.id) AS qso_count
+            FROM qsos q
+            JOIN contact_meta cm
+            ON cm.callsign = q.callsign
+            AND cm.key = 'country'
+            GROUP BY cm.value
+            ORDER BY qso_count DESC
+            LIMIT ?
+            """,
+            (
+                limit,
+            )
+        ).fetchall()
+
+        conn.close()
+
+        result_dict = {}
+
+        for t in result:
+            result_dict[t[0]] = t[1]
+
+        return result_dict
+
+    def get_top_states(self, limit):
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.cursor()
+
+        result = cur.execute(
+            """
+            SELECT
+                cm.value AS state,
+                COUNT(q.id) AS qso_count
+            FROM qsos q
+            JOIN contact_meta cm
+            ON cm.callsign = q.callsign
+            AND cm.key = 'state'
+            GROUP BY cm.value
+            ORDER BY qso_count DESC
+            LIMIT ?
+            """,
+            (
+                limit,
+            )
+        ).fetchall()
+
+        conn.close()
+
+        result_dict = {}
+
+        for t in result:
+            key = us_state_codes.get(t[0]) or t[0]
+            result_dict[key] = t[1]
+
+        return result_dict
 
 class Db:
     def __init__(self, db_path):
