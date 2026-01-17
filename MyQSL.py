@@ -208,9 +208,13 @@ def delete_qso(qso_id):
 
 
 # Lookup and QSL page
-@app.route("/lookup/<callsign>", methods=["GET", "POST"])
-def lookup(callsign):
+@app.route("/lookup/<callsign>", defaults={"stroke": None}, methods=["GET", "POST"])
+@app.route("/lookup/<callsign>/<stroke>", methods=["GET", "POST"])
+def lookup(callsign, stroke):
     callsign = callsign.upper()
+
+    if stroke is not None:
+        callsign = callsign + "/" + stroke
 
     qrz_info = expand_class(qrz.lookup(callsign))
 
