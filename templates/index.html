@@ -249,7 +249,10 @@ const lineChart = new Chart(lineCtx, {
         },
         scales: {
             x: { ticks: { color: bsVar('--bs-body-color') } },
-            y: { ticks: { color: bsVar('--bs-body-color') } }
+            y: {
+                min: 0,
+                ticks: { color: bsVar('--bs-body-color') } 
+            }
         }
     }
 });

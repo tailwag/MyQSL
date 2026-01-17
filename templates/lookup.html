@@ -92,13 +92,13 @@
                             <!-- WITH -->
                             <div class="mb-3">
                                 <label class="form-label">With</label>
-                                <input class="form-control" name="With" value="{{ qslInfo.With or '' }}" required>
+                                <input required class="form-control" name="With" value="{{ qslInfo.With or '' }}" required>
                             </div>
 
                             <!-- DATE -->
                             <div class="mb-3">
                                 <label class="form-label">Date (UTC)</label>
-                                <input class="form-control" name="Date" id="dateField" value="{{ qslInfo.Date or '' }}">
+                                <input required class="form-control" name="Date" id="dateField" value="{{ qslInfo.Date or '' }}">
                             </div>
 
                             <!-- BAND -->
@@ -107,7 +107,7 @@
 
                                 <div class="d-flex w-100 align-items-center gap-2">
                                     <!-- Dropdown -->
-                                    <select class="form-select" name="Band" id="bandSelect">
+                                    <select required class="form-select" name="Band" id="bandSelect">
                                         <option value="">Select band</option>
                                         {% for b in bands %}
                                             <option value="{{ b }}" {% if qslInfo.Band == b %}selected{% endif %}>
@@ -134,7 +134,7 @@
                             <div class="mb-3">
                                 <label class="form-label">Mode</label>
                                 <div class="input-group">
-                                    <input class="form-control" name="Mode" id="modeField" value="{{ qslInfo.Mode or '' }}">
+                                    <input required class="form-control" name="Mode" id="modeField" value="{{ qslInfo.Mode or '' }}">
                                     {% for m in quickmode %}
                                         <button 
                                             type="button" 
@@ -151,7 +151,7 @@
                             <div class="mb-3">
                                 <label class="form-label">Frequency</label>
                                 <div class="input-group">
-                                    <input class="form-control" name="Freq" id="freqField" value="{{ qslInfo.Freq or '' }}">
+                                    <input required class="form-control" name="Freq" id="freqField" value="{{ qslInfo.Freq or '' }}">
                                     <div class="input-group-text"><strong id="fpLabel">MHz</strong></div>
                                     <input id="fpValue" type="hidden" name="__hidden_frequency_prefix" value="MHz"/>
                                 </div>
