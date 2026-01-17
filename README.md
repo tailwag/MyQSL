@@ -3,7 +3,7 @@
 
 Ham radio logging and QSL card software. Pronounced "My Queasel". 
 
-This software handles logging to QRZ.com as well as generated and sends QSL cards via email. This is definitely a personal project, and really just made for me. I haven't hard coded any values specific to me, however, so if you would like to use this software, it should be as easy as generating your own config file, and swapping out my images for yours. 
+This software handles logging to QRZ.com as well as generates and sends QSL cards via email. This is definitely a personal project, and really just made for me. I haven't hard coded any values specific to me, however, so if you would like to use this software, it should be as easy as generating your own config file based on the provided example, and swapping out my images for yours. 
 
 One challenge, should you decide to adpat this code for your own use, however, would be mail. I handle my domains' email service through Office 365, so I used their API for mail sending. I haven't integrated SMTP at all. I'm sure it wouldn't be that difficult to do, but I don't need to, so I haven't. 
 
