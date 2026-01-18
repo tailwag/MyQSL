@@ -6,14 +6,14 @@ QSO History
 
 {% block content %}
 <div class="container-fluid mt-3">
-    <div class="row g-3">
+    <div class="row g-4">
         <!-- LEFT COLUMN: QRZ INFO -->
-        <div class="col-lg-3 col-md-4">
+        <div class="col-md-4">
             {% include "partials/qrz_info_panel.html" %}
         </div>
 
         <!-- RIGHT COLUMN: QSO LIST -->
-        <div class="col-lg-9 col-md-8">
+        <div class="col-md-8">
             <div class="card shadow-sm">
                 <div class="card-header fw-bold">
                     Previous QSOs with {{ callsign }}
@@ -33,7 +33,7 @@ QSO History
                                     <img
                                         src="{{ qso.qsl_card.url }}"
                                         class="img-thumbnail"
-                                        style="width: 120px;"
+                                        style="width: 190px;"
                                     >
                                     </a>
                                     {% else %}
@@ -48,7 +48,8 @@ QSO History
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
                                         <div class="fw-bold">
-                                        {{ qso.qso_date }} — {{ qso.time_on }} UTC
+                                            {{ qso.qso_date[0:4] }}-{{ qso.qso_date[4:6] }}-{{ qso.qso_date[6:8] }} &nbsp;
+                                            {{ qso.time_on }} UTC
                                         </div>
                                         <div class="text-muted small">
                                         {{ qso.band }} / {{ qso.mode }} / {{ qso.freq }}
