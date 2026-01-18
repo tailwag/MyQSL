@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}
+    QSL Lookup
+{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+  <div class="row g-3">
+
+    <!-- LEFT COLUMN: QRZ INFO -->
+    <div class="col-lg-3 col-md-4">
+      <!-- Re-use your existing QRZ panel here -->
+      {% include "partials/qrz_info_panel.html" %}
+    </div>
+
+    <!-- RIGHT COLUMN: QSO LIST -->
+    <div class="col-lg-9 col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-header fw-bold">
+          Previous QSOs with {{ callsign }}
+        </div>
+
+        <div class="card-body p-2">
+
+          <!-- QSO ENTRY -->
+          {% for qso in qsos %}
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="row g-3 align-items-start">
+
+                <!-- QSL CARD IMAGE -->
+                <div class="col-auto">
+                  <img
+                    src="{{ qso.card_image_url }}"
+                    alt="QSL Card"
+                    class="img-thumbnail"
+                    style="width: 120px; height: auto;"
+                  >
+                </div>
+
+                <!-- QSO DETAILS -->
+                <div class="col">
+                  <div class="d-flex justify-content-between">
+                    <div>
+                      <div class="fw-bold">
+                        QSO #{{ qso.id }} — {{ qso.QSO_DATE }}
+                      </div>
+                      <div class="text-muted small">
+                        {{ qso.time_on }} UTC
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr class="my-2">
+
+                  <div class="row small">
+                    <div class="col-md-6">
+                      <div><strong>Call:</strong> {{ qso.callsign }}</div>
+                      <div><strong>Band:</strong> {{ qso.BAND }}</div>
+                      <div><strong>Freq:</strong> {{ qso.FREQ }}</div>
+                      <div><strong>Mode:</strong> {{ qso.MODE }}</div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <div><strong>RST Sent:</strong> {{ qso.RSTS }}</div>
+                      <div><strong>RST Rcvd:</strong> {{ qso.RSTR }}</div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="text-muted text-center p-3">
+            No previous QSOs found.
+          </div>
+          {% endfor %}
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+{% block js %}
+{% endblock %}

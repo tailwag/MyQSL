@@ -8,120 +8,12 @@
 import os
 import json
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
-
-from MyQSL.CardGen import genCard
-from MyQSL.O365_Send import sendMessage
 from MyQSL.thumbnail import thumbnail_check
-from MyQSL.QRZ import QRZClient, expand_class
-from MyQSL.dbhandler import Db
 from MyQSL.config import get_config, build_freq_range, build_quick_freq, get_backdrop_images
-
-qrz = QRZClient()
-db = Db(get_config("Settings/Database/DBPath"))
+from MyQSL.support import qrz, db, format_mhz, qsl_status_text, qrz_status_text, get_status_texts, get_keys, card_path_from_adif, get_qrz_info
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-secret")
-
-
-######################################################################
-# Support functions                                                  #
-######################################################################
-def format_mhz(freq_str: str) -> str:
-    if "." not in freq_str:
-        return freq_str + ".000MHz"
-
-    whole, frac = freq_str.split(".", 1)
-
-    if len(frac) <= 3:
-        return f"{whole}.{frac.ljust(3, '0')}" + "MHz"
-
-    return freq_str + "MHz"
-
-
-def qsl_status_text(qsl_gen_status, qsl_send_status):
-    if qsl_gen_status is None:
-        return "None"
-
-    if qsl_gen_status == "failed":
-        return "Couldn't Generate Card"
-
-    if qsl_gen_status in ("pending", "running"):
-        return "Creating"
-
-    if qsl_gen_status == "done":
-        if qsl_send_status is None:
-            return "Created"
-        if qsl_send_status == "failed":
-            return "Send Failed!"
-        if qsl_send_status in ("pending", "running"):
-            return "Sending…"
-        if qsl_send_status == "done":
-            return "Sent"
-
-    return "Unknown"
-
-
-def qrz_status_text(qrz_log_status):
-    if qrz_log_status is None:
-        return "None"
-
-    if qrz_log_status == "failed":
-        return "Failed"
-
-    if qrz_log_status in ("pending", "running"):
-        return "Uploading"
-
-    if qrz_log_status == "done":
-        return "Logged"
-
-
-def get_status_texts(qso_id):
-    qsl_gen_status  = db.job.get_status(qso_id, "QSL_GEN")
-    qsl_send_status = db.job.get_status(qso_id, "QSL_SEND")
-    qrz_log_status  = db.job.get_status(qso_id, "QRZ_LOG")
-
-    qsl_status = qsl_status_text(qsl_gen_status, qsl_send_status)
-    qrz_status = qrz_status_text(qrz_log_status)
-
-    return qsl_status, qrz_status
-
-
-def get_keys(main_dict, prefix):
-    new_dict = None
-    full_prefix = "__" + prefix + "_"
-    prefix_length = len(full_prefix)  # __ and _ is 3
-    for k, v in main_dict.items():
-        if k[0:prefix_length] == full_prefix:
-            if new_dict is None:
-                new_dict = {}
-
-            new_dict[k[prefix_length:]] = v
-
-    if new_dict is not None:
-        for i in new_dict:
-            del main_dict[full_prefix + i]
-
-    return new_dict
-
-
-def card_path_from_adif(qso):
-    # CALL
-    # QSO_DATE 20260101
-    # TIME_ON
-    call = qso.get("CALL")
-    date = qso.get("QSO_DATE")
-    time = qso.get("TIME_ON")
-
-    if call is None or date is None or time is None:
-        return None
-
-    date = str(date)
-    time = str(time)
-    date = date[:4] + "-" + date[4:6] + "-" + date[6:8]
-
-    card_name = "qslcard_" + call + "_" + date + "_" + time + "_UTC.jpg"
-
-    return 'static/img/' + card_name
 
 
 ######################################################################
@@ -216,19 +108,7 @@ def lookup(callsign, stroke):
     if stroke is not None:
         callsign = callsign + "/" + stroke
 
-    qrz_info = expand_class(qrz.lookup(callsign))
-
-    if qrz_info:
-        q_call = qrz_info.get('callsign')
-        q_country = qrz_info.get('country')
-        q_state = qrz_info.get('state')
-
-        if q_call is not None and q_country is not None:
-            db.contact.tag.set(q_call, 'country', q_country)
-
-            if q_state is not None:
-                db.contact.tag.set(q_call, 'state', q_state)
-
+    qrz_info = get_qrz_info(callsign)
     qso_history = qrz.get_previous_qsos(callsign)
 
     if qso_history:
@@ -278,6 +158,25 @@ def lookup(callsign, stroke):
         qslInfo=qslInfo
     )
 
+
+# Lookup and QSL page
+@app.route("/history/<callsign>", defaults={"stroke": None}, methods=["GET", "POST"])
+@app.route("/history/<callsign>/<stroke>", methods=["GET", "POST"])
+def history(callsign, stroke):
+    callsign = callsign.upper()
+
+    if stroke is not None:
+        callsign = callsign + "/" + stroke
+
+    qrz_info = get_qrz_info(callsign)
+    qso_history = qrz.get_previous_qsos(callsign)
+
+    return render_template(
+        "history.html",
+        qrz_info=qrz_info,
+        callsign=callsign,
+        qsos=qso_history
+    )
 
 @app.route("/edit/<qso_id>", methods=["GET"])
 def edit_qso(qso_id):

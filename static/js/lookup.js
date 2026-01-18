@@ -65,11 +65,6 @@ function setFreqPrecision() {
 
     var frmtFreq = freq.toFixed(3);
 
-    console.log("freq")
-    console.log(freq)
-    console.log("frmtFreq")
-    console.log(frmtFreq)
-
     if (freq != parseFloat(frmtFreq))
         frmtFreq = freq;
 
@@ -136,14 +131,6 @@ document.getElementById("bandSelect").addEventListener("change", setFreqPrecisio
 document.getElementById("freqField").addEventListener("change", setBandFromFreq);
 document.getElementById("freqField").addEventListener("change", setFreqPrecision);
 document.getElementById("freqField").addEventListener("change", function() { frequencyAdjusted = true; })
-document.getElementById('callsign-form').addEventListener('submit', function(e) {
-    e.preventDefault();  // prevent actual form submission
-    const callsign = document.getElementById('callsign-input').value.trim().toUpperCase();
-    if (callsign) {
-        // Redirect to /lookup/<callsign>
-        window.location.href = '/lookup/' + encodeURIComponent(callsign);
-    }
-});
 
 const imageModal = document.getElementById('imageModal')
 const modalImage = document.getElementById('modalImage')
