@@ -32,6 +32,14 @@
             alt="MyQSL"
         >
         </a>
+        <div class="search-container">
+            <form method="post" action="/" class="w-100">
+                <div class="input-group">
+                    <input id="callsign-search" type="text" name="callsign" class="form-control" placeholder="Enter callsign..." required>
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </div>
+            </form>
+        </div>
         {% block bar %}{% endblock %} 
 
 

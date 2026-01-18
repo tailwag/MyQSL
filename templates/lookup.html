@@ -12,42 +12,7 @@
         <div class="row g-4">
             <!-- QRZ Info Panel -->
             <div class="col-md-4">
-                <div class="card shadow-sm bg-body" style="margin-bottom:10px">
-                    <div class="card-body">
-                        <form id="callsign-form">
-                            <div class="input-group">
-                                <input id="callsign-input" class="form-control" type="text" placeholder="Enter callsign...">
-                                <button class="btn btn-primary" type="submit">Search</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="card shadow-sm bg-body">
-                    <div class="card-body">
-                        <h4>QRZ Info</h4>
-                        {% if qrz_info %}
-                            {% if qrz_info.image %}
-                            <a target="_blank" tabindex="-1" rel="noopener noreferrer" href="https://qrz.com/db/{{ qrz_info.callsign }}">
-                                <img class="img-fluid md-2 shadow" style="border-radius:10px;margin-top:10px;margin-bottom:20px;width:220px;height:220px;object-fit:cover" src="{{ qrz_info.image }}">
-                            </a>
-                            {% endif %}
-                            <p><strong>Callsign:</strong> <a target="_blank" tabindex="-1" rel="noopener noreferrer" href="https://qrz.com/db/{{ qrz_info.callsign }}">{{ qrz_info.callsign }}</a></p>
-                            <p><strong>Class:</strong> {{ qrz_info.class }}</p>
-                            <p><strong>Name:</strong> {{ qrz_info.first_name }} {{ qrz_info.last_name }}</p>
-                            <p><strong>Email:</strong> {{ qrz_info.email or "Not public" }}</p>
-                            <p><strong>QSL Manager:</strong> {{ qrz_info.qslmgr or "N/A" }}</p>
-
-                            {% if qrz_info.state %}
-                            <p><strong>State:</strong> {{ qrz_info.state }}</p>
-                            {% endif %}
-
-                            <p><strong>Country:</strong> {{ qrz_info.country }}</p>
-                            <p><strong>Grid:</strong> {{ qrz_info.grid }}</p>
-                        {% else %}
-                            <p>No QRZ info found for this callsign.</p>
-                        {% endif %}
-                    </div>
-                </div>
+                {% include "partials/qrz_info_panel.html" %}
             </div>
 
             <!-- QSL Form Panel -->

@@ -7,14 +7,6 @@ MyQSL
 <link href="{{ url_for('static', filename='css/index.css') }}" rel="stylesheet"/>
 {% endblock %}
 {% block bar %}
-<div class="search-container">
-    <form method="post" class="w-100">
-        <div class="input-group">
-            <input id="callsign-search" type="text" name="callsign" class="form-control" placeholder="Enter callsign..." required>
-            <button class="btn btn-primary" type="submit">Search</button>
-        </div>
-    </form>
-</div>
 {% endblock %}
 {% block content %}
 {% with messages = get_flashed_messages(with_categories=true) %}
