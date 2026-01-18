@@ -277,6 +277,27 @@ class Contact:
         self.db_path = self.parent.db_path
         self.tag = ContactMeta(self)
 
+    def get_history(self, callsign):
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+
+        rows = cur.execute(
+            """
+            SELECT * FROM qsos
+            WHERE callsign = ?
+            ORDER BY id DESC
+            """,
+            (
+                callsign,
+            )
+        ).fetchall()
+
+        conn.close()
+
+        rows = [dict(row) for row in rows]
+
+        return rows
 
 class Job:
     def __init__(self, parent):

@@ -1,3 +1,4 @@
+import os
 from MyQSL.QRZ import QRZClient, expand_class
 from MyQSL.config import get_config
 from MyQSL.dbhandler import Db
@@ -121,3 +122,133 @@ def get_qrz_info(callsign):
                 db.contact.tag.set(q_call, 'state', q_state)
 
     return qrz_info
+
+def qsl_card_filename(qso):
+    date = f"{qso['qso_date'][:4]}-{qso['qso_date'][4:6]}-{qso['qso_date'][6:]}"
+    time = qso["time_on"]
+    callsign = qso["callsign"].upper()
+
+    return f"qslcard_{callsign}_{date}_{time}_UTC.jpg"
+
+def attach_qsl_card(qso):
+    qsl_img_dir = get_config("Settings/QSLCard/CardOutput")
+    filename = qsl_card_filename(qso)
+    full_path = os.path.join(qsl_img_dir, filename)
+
+    if os.path.isfile(full_path):
+        qso["qsl_card"] = {
+            "exists": True,
+            "filename": filename,
+            "url": f"/static/img/{filename}",
+        }
+    else:
+        qso["qsl_card"] = {
+            "exists": False,
+            "filename": filename,
+            "url": None,
+        }
+
+def normalize_qrz_qso(qso):
+    return {
+        "source": "qrz",
+        "callsign": qso.get("CALL"),
+        "qso_date": qso.get("QSO_DATE"),          # YYYYMMDD
+        "time_on": qso.get("TIME_ON"),            # HHMM
+        "band": qso.get("BAND"),
+        "mode": qso.get("MODE"),
+        "freq": normalize_freq(qso.get("FREQ")),
+        "rsts": qso.get("RST_SENT"),
+        "rstr": qso.get("RST_RCVD"),
+        "raw": qso,
+    }
+
+def normalize_local_qso(qso):
+    return {
+        "source": "local",
+        "id": qso.get("id"),
+        "callsign": qso.get("callsign"),
+        "qso_date": qso.get("qso_date").replace("-", ""),  # YYYYMMDD
+        "time_on": qso.get("time_on").split()[0],          # HHMM
+        "band": qso.get("band"),
+        "mode": qso.get("mode"),
+        "freq": normalize_freq(qso.get("freq")),
+        "rsts": qso.get("rsts"),
+        "rstr": qso.get("rstr"),
+        "created_at": qso.get("created_at"),
+        "raw": qso,
+    }
+
+def qso_key(qso):
+    return (
+        qso["callsign"],
+        qso["qso_date"],
+        qso["time_on"],
+        qso["band"],
+        qso["mode"],
+        qso["freq"],
+    )
+
+def normalize_freq(freq):
+    if freq is None:
+        return None
+
+    freq = str(freq).lower().replace("mhz", "").strip()
+    try:
+        return round(float(freq), 3)
+    except ValueError:
+        return None
+
+
+def get_contact_history(callsign):
+    qrz_history = qrz.get_previous_qsos(callsign)
+    local_history = db.contact.get_history(callsign)
+
+    normalized_qrz = [normalize_qrz_qso(q) for q in qrz_history]
+    normalized_local = [normalize_local_qso(q) for q in local_history]
+
+    qrz_map = {qso_key(q): q for q in normalized_qrz}
+    local_map = {qso_key(q): q for q in normalized_local}
+
+    all_keys = set(qrz_map) | set(local_map)
+    merged_history = []
+
+    for key in sorted(all_keys):
+        qrz_qso = qrz_map.get(key)
+        local_qso = local_map.get(key)
+
+        merged_history.append({
+            "key": key,
+            "callsign": key[0],
+            "qso_date": key[1],
+            "time_on": key[2],
+            "band": key[3],
+            "mode": key[4],
+            "freq": key[5],
+
+            "qrz": qrz_qso,
+            "local": local_qso,
+
+            "flags": {
+                "in_qrz": qrz_qso is not None,
+                "in_local": local_qso is not None,
+                "qrz_only": qrz_qso is not None and local_qso is None,
+                "local_only": local_qso is not None and qrz_qso is None,
+                "matched": qrz_qso is not None and local_qso is not None,
+            }
+        })
+
+    for qso in merged_history:
+        attach_qsl_card(qso)
+
+    return merged_history
+
+
+
+
+
+
+
+
+
+
+

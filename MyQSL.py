@@ -10,7 +10,18 @@ import json
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 from MyQSL.thumbnail import thumbnail_check
 from MyQSL.config import get_config, build_freq_range, build_quick_freq, get_backdrop_images
-from MyQSL.support import qrz, db, format_mhz, qsl_status_text, qrz_status_text, get_status_texts, get_keys, card_path_from_adif, get_qrz_info
+from MyQSL.support import (
+    qrz,
+    db,
+    format_mhz,
+    qsl_status_text,
+    qrz_status_text,
+    get_status_texts,
+    get_keys,
+    card_path_from_adif,
+    get_qrz_info,
+    get_contact_history
+)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-secret")
@@ -169,7 +180,7 @@ def history(callsign, stroke):
         callsign = callsign + "/" + stroke
 
     qrz_info = get_qrz_info(callsign)
-    qso_history = qrz.get_previous_qsos(callsign)
+    qso_history = get_contact_history(callsign)
 
     return render_template(
         "history.html",
