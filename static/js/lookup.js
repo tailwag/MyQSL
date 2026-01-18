@@ -132,13 +132,6 @@ document.getElementById("freqField").addEventListener("change", setBandFromFreq)
 document.getElementById("freqField").addEventListener("change", setFreqPrecision);
 document.getElementById("freqField").addEventListener("change", function() { frequencyAdjusted = true; })
 
-const imageModal = document.getElementById('imageModal')
-const modalImage = document.getElementById('modalImage')
-
-imageModal.addEventListener('show.bs.modal', event => {
-    const link = event.relatedTarget
-    modalImage.src = link.getAttribute('href')
-})
 
 setUTCDate();
 setFreqLabel();

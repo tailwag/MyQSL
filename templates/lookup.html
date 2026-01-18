@@ -163,23 +163,7 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content bg-transparent border-0">
-                <div class="modal-body p-0 text-center position-relative">
-                    <button type="button"
-                            class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-
-                    <img id="modalImage"
-                        src=""
-                        class="img-fluid rounded"
-                        alt="Full size image">
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include "partials/image_modal.html" %}
 {% endblock %}
 {% block js %}
 <script>
@@ -188,4 +172,5 @@
 </script>
 <script src="{{ url_for('static', filename='js/lookup.js') }}"></script>
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<script src="{{ url_for('static', filename='js/modal.js') }}"></script>
 {% endblock %}

@@ -20,7 +20,8 @@ from MyQSL.support import (
     get_keys,
     card_path_from_adif,
     get_qrz_info,
-    get_contact_history
+    get_contact_history,
+    expand_class
 )
 
 app = Flask(__name__)

@@ -261,27 +261,3 @@ class QRZClient:
             raise RuntimeError(f"QRZ rejected QSO: {response_text}")
 
         return response_text
-
-
-def expand_class(qrz_info):
-    if not qrz_info:
-        return qrz_info
-
-    country = qrz_info.get("country")
-    if country != "United States":
-        return qrz_info
-
-    expanded_names = {
-        "N": "Novice",
-        "T": "Technician",
-        "G": "General",
-        "A": "Advanced",
-        "E": "Extra"
-    }
-
-    for k, v in expanded_names.items():
-        if k == qrz_info.get("class"):
-            qrz_info["class"] = v
-            break
-
-    return qrz_info

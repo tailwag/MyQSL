@@ -1,5 +1,5 @@
 import os
-from MyQSL.QRZ import QRZClient, expand_class
+from MyQSL.QRZ import QRZClient
 from MyQSL.config import get_config
 from MyQSL.dbhandler import Db
 
@@ -9,6 +9,29 @@ db = Db(get_config("Settings/Database/DBPath"))
 ######################################################################
 # Support functions                                                  #
 ######################################################################
+def expand_class(qrz_info):
+    if not qrz_info:
+        return qrz_info
+
+    country = qrz_info.get("country")
+    if country != "United States":
+        return qrz_info
+
+    expanded_names = {
+        "N": "Novice",
+        "T": "Technician",
+        "G": "General",
+        "A": "Advanced",
+        "E": "Extra"
+    }
+
+    for k, v in expanded_names.items():
+        if k == qrz_info.get("class"):
+            qrz_info["class"] = v
+            break
+
+    return qrz_info
+
 def format_mhz(freq_str: str) -> str:
     if "." not in freq_str:
         return freq_str + ".000MHz"

@@ -146,7 +146,11 @@ MyQSL
         {% for qso in qsolog %}
             <tr>
                 <th scope="row">{{ qso.id }}</th>
-                <td>{{ qso.callsign }}</td>
+                <td>
+                    <a href="{{ url_for('history', callsign=qso.callsign) }}">
+                        {{ qso.callsign }}
+                    </a>
+                </td>
                 <td>{{ qso.qso_date }}</td>
                 <td>{{ qso.time_on }}</td>
                 <td>{{ qso.band }}</td>

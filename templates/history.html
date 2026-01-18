@@ -1,112 +1,117 @@
 {% extends "base.html" %}
 
 {% block title %}
-  QSL Lookup
+QSO History
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-3">
-  <div class="row g-3">
-
-    <!-- LEFT COLUMN: QRZ INFO -->
-    <div class="col-lg-3 col-md-4">
-      {% include "partials/qrz_info_panel.html" %}
-    </div>
-
-    <!-- RIGHT COLUMN: QSO LIST -->
-    <div class="col-lg-9 col-md-8">
-      <div class="card shadow-sm">
-        <div class="card-header fw-bold">
-          Previous QSOs with {{ callsign }}
+    <div class="row g-3">
+        <!-- LEFT COLUMN: QRZ INFO -->
+        <div class="col-lg-3 col-md-4">
+            {% include "partials/qrz_info_panel.html" %}
         </div>
 
-        <div class="card-body p-2">
-
-          {% for qso in qsos %}
-          <div class="card mb-3">
-
-            <div class="card-body">
-              <div class="row g-3 align-items-start">
-
-                <!-- QSL CARD IMAGE -->
-                <div class="col-auto">
-                  {% if qso.qsl_card.exists %}
-                    <img
-                      src="{{ qso.qsl_card.url }}"
-                      class="img-thumbnail"
-                      style="width: 120px;"
-                    >
-                  {% else %}
-                    <div class="img-thumbnail d-flex align-items-center justify-content-center text-muted"
-                         style="width:120px;height:80px;">
-                      No Card
-                    </div>
-                  {% endif %}
+        <!-- RIGHT COLUMN: QSO LIST -->
+        <div class="col-lg-9 col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold">
+                    Previous QSOs with {{ callsign }}
                 </div>
+                <div class="card-body p-2">
+                    {% for qso in qsos %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row g-3 align-items-start">
+                            <!-- QSL CARD IMAGE -->
+                                <div class="col-auto">
+                                    {% if qso.qsl_card.exists %}
+                                    <a href="{{ qso.qsl_card.url }}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#imageModal"
+                                        class="image-link">
+                                    <img
+                                        src="{{ qso.qsl_card.url }}"
+                                        class="img-thumbnail"
+                                        style="width: 120px;"
+                                    >
+                                    </a>
+                                    {% else %}
+                                    <div class="img-thumbnail d-flex align-items-center justify-content-center text-muted"
+                                            style="width:120px;height:80px;">
+                                        No Card
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            <!-- QSO DETAILS -->
+                            <div class="col">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="fw-bold">
+                                        {{ qso.qso_date }} — {{ qso.time_on }} UTC
+                                        </div>
+                                        <div class="text-muted small">
+                                        {{ qso.band }} / {{ qso.mode }} / {{ qso.freq }}
+                                        </div>
+                                    </div>
 
-                <!-- QSO DETAILS -->
-                <div class="col">
-                  <div class="d-flex justify-content-between align-items-start">
+                                    <div class="d-flex justify-content-end" style="margin-top: 10px; marging-right:0px; padding:0px;">
+                                        {% if qso.flags.in_local %}
+                                        <a href="{{ url_for('edit_qso', qso_id=qso.local.id) }}"><i class="bi bi-pencil-square"></i></a>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <a href="{{ url_for('delete_qso', qso_id=qso.local.id) }}"><i class="bi bi-trash"></i></a>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        {% endif %}
+                                    </div>
 
-                    <div>
-                      <div class="fw-bold">
-                        {{ qso.qso_date }} — {{ qso.time_on }} UTC
-                      </div>
-                      <div class="text-muted small">
-                        {{ qso.band }} / {{ qso.mode }} / {{ qso.freq }}
-                      </div>
+                                <!-- STATUS BADGES -->
+                                <div class="text-end">
+
+                                    {% if qso.flags.matched %}
+                                    <span class="badge bg-success">Matched</span>
+                                    {% elif qso.flags.qrz_only %}
+                                    <span class="badge bg-info">QRZ only</span>
+                                    {% elif qso.flags.local_only %}
+                                    <span class="badge bg-warning">Local only</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row small">
+                                <div class="col-md-6">
+                                    <div><strong>Call:</strong> {{ callsign }}</div>
+
+                                    {% if qso.local %}
+                                    <div><strong>Local ID:</strong> {{ qso.local.id }}</div>
+                                    <div><strong>Logged:</strong> {{ qso.local.created_at }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    {% if qso.qrz %}
+                                    <div><strong>RST Sent:</strong> {{ qso.qrz.rsts }}</div>
+                                    <div><strong>RST Rcvd:</strong> {{ qso.qrz.rstr }}</div>
+                                    {% elif qso.local %}
+                                    <div><strong>RST Sent:</strong> {{ qso.local.rsts }}</div>
+                                    <div><strong>RST Rcvd:</strong> {{ qso.local.rstr }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        </div>
                     </div>
-
-                    <!-- STATUS BADGES -->
-                    <div class="text-end">
-                      {% if qso.flags.matched %}
-                        <span class="badge bg-success">Matched</span>
-                      {% elif qso.flags.qrz_only %}
-                        <span class="badge bg-info">QRZ only</span>
-                      {% elif qso.flags.local_only %}
-                        <span class="badge bg-warning">Local only</span>
-                      {% endif %}
                     </div>
-
-                  </div>
-
-                  <hr class="my-2">
-
-                  <div class="row small">
-                    <div class="col-md-6">
-                      <div><strong>Call:</strong> {{ callsign }}</div>
-
-                      {% if qso.local %}
-                        <div><strong>Local ID:</strong> {{ qso.local.id }}</div>
-                        <div><strong>Logged:</strong> {{ qso.local.created_at }}</div>
-                      {% endif %}
+                    {% else %}
+                    <div class="text-muted text-center p-3">
+                    No previous QSOs found.
                     </div>
-
-                    <div class="col-md-6">
-                      {% if qso.qrz %}
-                        <div><strong>RST Sent:</strong> {{ qso.qrz.rsts }}</div>
-                        <div><strong>RST Rcvd:</strong> {{ qso.qrz.rstr }}</div>
-                      {% elif qso.local %}
-                        <div><strong>RST Sent:</strong> {{ qso.local.rsts }}</div>
-                        <div><strong>RST Rcvd:</strong> {{ qso.local.rstr }}</div>
-                      {% endif %}
-                    </div>
-                  </div>
-
+                    {% endfor %}
                 </div>
-              </div>
             </div>
-          </div>
-          {% else %}
-          <div class="text-muted text-center p-3">
-            No previous QSOs found.
-          </div>
-          {% endfor %}
-
         </div>
-      </div>
     </div>
-
-  </div>
 </div>
+{% include "partials/image_modal.html" %}
+{% endblock %}
+{% block js %}
+<script src="{{ url_for('static', filename='js/modal.js') }}"></script>
 {% endblock %}
