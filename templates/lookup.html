@@ -23,7 +23,10 @@
                 </div>
                 {% elif qso_history and qso_history|length > 0 %}
                 <div class="alert alert-warning mb-3">
-                    <strong>Worked before:</strong>
+                    <div class="d-flex justify-content-between">
+                        <strong>Worked before:</strong>
+                        <a href="{{ url_for('history', callsign=qslInfo.With) }}">History</a>
+                    </div>
 
                     <ul class="mb-0 small">
                         {% for qso in qso_history %}
