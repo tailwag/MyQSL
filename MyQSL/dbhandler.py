@@ -489,16 +489,33 @@ class Stats:
 
         return count[0]
 
-    def bands(self):
+    def bands(self, limit=8):
         conn = sqlite3.connect(self.db_path)
         cur = conn.cursor()
 
-        ret = cur.execute("SELECT band FROM qsos").fetchall()
-        ret = [val[0] for val in ret]
+        result = cur.execute(
+            """
+            SELECT 
+                band, 
+                COUNT(*) AS qso_count
+            FROM qsos
+            GROUP BY band
+            ORDER BY qso_count DESC
+            LIMIT ?
+            """,
+            (
+                limit,
+            )
+        ).fetchall()
 
-        sorted_bands = dict(sorted(Counter(ret).items(), reverse=False))
+        conn.close()
 
-        return sorted_bands
+        result_dict = {}
+
+        for t in result:
+            result_dict[t[0]] = t[1]
+
+        return result_dict
 
     def modes(self):
         conn = sqlite3.connect(self.db_path)
