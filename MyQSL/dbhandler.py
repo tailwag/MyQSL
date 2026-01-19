@@ -495,8 +495,8 @@ class Stats:
 
         result = cur.execute(
             """
-            SELECT 
-                band, 
+            SELECT
+                band,
                 COUNT(*) AS qso_count
             FROM qsos
             GROUP BY band
@@ -517,21 +517,38 @@ class Stats:
 
         return result_dict
 
-    def modes(self):
+    def modes(self, limit=8):
         conn = sqlite3.connect(self.db_path)
         cur = conn.cursor()
 
-        ret = cur.execute("SELECT mode FROM qsos").fetchall()
-        ret = [val[0] for val in ret]
+        result = cur.execute(
+            """
+            SELECT
+                mode,
+                COUNT(*) AS qso_count
+            FROM qsos
+            GROUP BY mode
+            ORDER BY qso_count DESC
+            LIMIT ?
+            """,
+            (
+                limit,
+            )
+        ).fetchall()
 
-        sorted_modes = dict(sorted(Counter(ret).items(), reverse=False))
+        conn.close()
 
-        return sorted_modes
+        result_dict = {}
 
-    def qsos_by_day(self, history):
+        for t in result:
+            result_dict[t[0]] = t[1]
+
+        return result_dict
+
+    def qsos_by_day(self, history=7):
         now = datetime.now(timezone.utc)
 
-        dates = [ (now - timedelta(days=i)).date() for i in reversed(range(history + 1)) ]
+        dates = [(now - timedelta(days=i)).date() for i in reversed(range(history + 1))]
 
         conn = sqlite3.connect(self.db_path)
         cur = conn.cursor()
