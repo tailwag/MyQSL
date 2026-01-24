@@ -56,79 +56,94 @@ us_state_codes = {
     "WI": "Wisconsin",
     "WY": "Wyoming",
 }
-
-def set_meta_tag(db_path, table_name, id_name, id, key, value):
+def _execute(db_path, query, vars):
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
 
-    count = cur.execute(
-        "SELECT COUNT(*) FROM " + table_name + " WHERE " + id_name + "=? AND key=?",
-        (
-            id,
-            key,
-        )
-    ).fetchone()
-
-    tag_exists = count[0] != 0
-
-    if tag_exists:
-        cur.execute(
-            "UPDATE " + table_name + " SET value=?, updated_at=DATETIME('now') WHERE " + id_name + "=? AND key=?",
-            (
-                value,
-                id,
-                key
-            )
-        )
-
-    else:
-        cur.execute(
-            "INSERT INTO " + table_name + " (" + id_name + ", key, value) VALUES (?, ?, ?)",
-            (
-                id,
-                key,
-                value
-            )
-        )
+    cur.execute(query, vars)
+    last_row = cur.lastrowid
 
     conn.commit()
     conn.close()
+
+    return last_row
+
+def _fetchone(db_path, query, vars):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    row = cur.execute(query, vars).fetchone()
+
+    conn.close()
+
+    return None if row is None else row[0]
+
+def _fetchall(db_path, query, vars):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    result = cur.execute(query, vars).fetchall()
+    conn.close()
+
+    result_dict = {}
+
+    for t in result:
+        result_dict[t[0]] = t[1]
+
+    return result_dict
+
+def _rowfactory(db_path, query, vars, fetch):
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    result = cur.execute(query, vars)
+
+    if fetch is None or fetch not in ['all', 'one']:
+        conn.close()
+        raise ValueError('Must specify "all" or "one" for Db._rowfactory function')
+
+    if fetch == 'all':
+        rows = result.fetchall()
+        rows = [dict(row) for row in rows]
+    elif fetch == 'one':
+        rows = result.fetchone()
+        rows = dict(rows)
+
+    conn.close()
+
+    return rows
+
+def set_meta_tag(db_path, table_name, id_name, id, key, value):
+    query = "SELECT COUNT(*) FROM " + table_name + " WHERE " + id_name + "=? AND key=?"
+    vars = (id, key,)
+    count = _fetchone(db_path, query, vars)
+
+    tag_exists = count != 0
+
+    if tag_exists:
+        query = "UPDATE " + table_name + " SET value=?, updated_at=DATETIME('now') WHERE " + id_name + "=? AND key=?"
+        vars = (value, id, key,)
+
+    else:
+        query = "INSERT INTO " + table_name + " (" + id_name + ", key, value) VALUES (?, ?, ?)"
+        vars = (id, key, value,)
+
+    _execute(db_path, query, vars)
 
 
 def get_meta_tag(db_path, table_name, id_name, id, key):
-    conn = sqlite3.connect(db_path)
-    cur = conn.cursor()
+    query = "SELECT value FROM " + table_name + " WHERE " + id_name + " IS ? AND key IS ?"
+    vars = (id, key,)
 
-    cur.execute(
-        "SELECT value FROM " + table_name + " WHERE " + id_name + " IS ? AND key IS ?",
-        (
-            id,
-            key
-        )
-    )
-    result = cur.fetchone()
-
-    conn.close()
-    if result is None:
-        return None
-
-    return result[0]
+    return _fetchone(db_path, query, vars)
 
 
 def del_meta_tag(db_path, table_name, id_name, id, key):
-    conn = sqlite3.connect(db_path)
-    cur = conn.cursor()
+    query = "DELETE FROM " + table_name + " WHERE " + id_name + " IS ? AND key IS ?"
+    vars = (id, key,)
 
-    cur.execute(
-        "DELETE FROM " + table_name + " WHERE " + id_name + " IS ? AND key IS ?",
-        (
-            id,
-            key,
-        )
-    )
-
-    conn.commit()
-    conn.close()
+    _execute(db_path, query, vars)
 
 
 class QsoMeta:
@@ -168,107 +183,71 @@ class Qso:
         self.tag = QsoMeta(self)
 
     def add(self, qso):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-
-        cur.execute(
-            """
+        query = """
             INSERT INTO qsos (
                 callsign, qso_date, time_on, band, mode,
                 freq, rsts, rstr, payload_json
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                qso["With"],
-                qso["Date"][:10],
-                qso["Date"][11:],
-                qso.get("Band"),
-                qso.get("Mode"),
-                qso.get("Freq"),
-                qso.get("RSTS"),
-                qso.get("RSTR"),
-                json.dumps(qso),
-            )
+            """
+
+        vars = (
+            qso["With"],
+            qso["Date"][:10],
+            qso["Date"][11:],
+            qso.get("Band"),
+            qso.get("Mode"),
+            qso.get("Freq"),
+            qso.get("RSTS"),
+            qso.get("RSTR"),
+            json.dumps(qso),
         )
 
-        qso_id = cur.lastrowid
-        conn.commit()
-        conn.close()
-        return qso_id
+        return _execute(self.db_path, query, vars)
 
     def delete(self, qso_id):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
+        query = "DELETE FROM qsos WHERE id = ?"
+        vars = (qso_id,)
 
-        cur.execute(
-            """
-            DELETE FROM qsos WHERE id = ?
-            """,
-            (
-                qso_id,
-            )
-        )
-
-        conn.commit()
-        conn.close()
+        _execute(self.db_path, query, vars)
 
     def edit(self, qso_id, qso):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-
-        cur.execute(
-            """
+        query = """
             UPDATE qsos SET
                 callsign=?, qso_date=?, time_on=?, band=?,
                 mode=?, freq=?, rsts=?, rstr=?, payload_json=?
             WHERE id IS ?
-            """,
-            (
-                qso["With"],
-                qso["Date"][:10],
-                qso["Date"][11:],
-                qso.get("Band"),
-                qso.get("Mode"),
-                qso.get("Freq"),
-                qso.get("RSTS"),
-                qso.get("RSTR"),
-                json.dumps(qso),
-                qso_id,
-            )
+            """
+
+        vars = (
+            qso["With"],
+            qso["Date"][:10],
+            qso["Date"][11:],
+            qso.get("Band"),
+            qso.get("Mode"),
+            qso.get("Freq"),
+            qso.get("RSTS"),
+            qso.get("RSTR"),
+            json.dumps(qso),
+            qso_id,
         )
 
-        conn.commit()
-        conn.close()
+        _execute(self.db_path, query, vars)
         return qso_id
 
     def get(self, num_qsos):
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
+        query = "SELECT * FROM qsos ORDER BY created_at DESC LIMIT ?"
+        vars = (num_qsos,)
+        fetch = 'all'
 
-        rows = cur.execute(
-            "SELECT * FROM qsos ORDER BY created_at DESC LIMIT ?",
-            (num_qsos,)
-        ).fetchall()
-
-        rows = [dict(row) for row in rows]
-
-        conn.close()
-        return rows
+        return _rowfactory(self.db_path, query, vars, fetch)
 
     def get_by_id(self, qso_id):
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
+        query = "SELECT * FROM qsos WHERE id=?"
+        vars = (qso_id,)
+        fetch = 'one'
 
-        row = cur.execute(
-            "SELECT * FROM qsos WHERE id=?",
-            (qso_id,)
-        ).fetchone()
-
-        conn.close()
-        return dict(row)
+        return _rowfactory(self.db_path, query, vars, fetch)
 
 
 class Contact:
@@ -278,26 +257,15 @@ class Contact:
         self.tag = ContactMeta(self)
 
     def get_history(self, callsign):
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
-
-        rows = cur.execute(
-            """
+        query = """
             SELECT * FROM qsos
             WHERE callsign = ?
             ORDER BY id DESC
-            """,
-            (
-                callsign,
-            )
-        ).fetchall()
+            """
+        vars = (callsign,)
+        fetch = 'all'
 
-        conn.close()
-
-        rows = [dict(row) for row in rows]
-
-        return rows
+        return _rowfactory(self.db_path, query, vars, fetch)
 
 class Job:
     def __init__(self, parent):
@@ -305,41 +273,25 @@ class Job:
         self.db_path = self.parent.db_path
 
     def add(self, qso_id, job_type, payload=None):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-
-        cur.execute(
-            """
+        query = """
             INSERT INTO jobs (
                 qso_id, job_type, payload_json
             )
             VALUES (?, ?, ?)
-            """,
-            (
-                qso_id,
-                job_type,
-                json.dumps(payload) if payload else None
-            )
+            """
+        vars = (
+            qso_id,
+            job_type,
+            json.dumps(payload) if payload else None
         )
 
-        conn.commit()
-        conn.close()
+        _execute(self.db_path, query, vars)
 
     def delete_qso(self, qso_id):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
+        query = "DELETE FROM jobs WHERE qso_id = ?"
+        vars = (qso_id,)
 
-        cur.execute(
-            """
-            DELETE FROM jobs WHERE qso_id = ?
-            """,
-            (
-                qso_id,
-            )
-        )
-
-        conn.commit()
-        conn.close()
+        _execute(self.db_path, query, vars)
 
     def get_next(self):
         conn = sqlite3.connect(self.db_path)
@@ -377,76 +329,53 @@ class Job:
         return dict(job)
 
     def mark_done(self, job_id):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-
-        cur.execute(
-            """
+        query = """
             UPDATE jobs
             SET status='done', updated_at=CURRENT_TIMESTAMP
             WHERE id=?
-            """,
-            (job_id,)
-        )
+            """
+        vars = (job_id,)
 
-        conn.commit()
-        conn.close()
+        _execute(self.db_path, query, vars)
 
     def mark_failed(self, job_id, error):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-
-        cur.execute(
-            """
+        query = """
             UPDATE jobs
             SET status='failed',
                 last_error=?,
                 updated_at=CURRENT_TIMESTAMP
             WHERE id=?
-            """,
-            (error[:500], job_id)
-        )
+            """
+        vars = (error[:500], job_id)
 
-        conn.commit()
-        conn.close()
+        _execute(self.db_path, query, vars)
 
     def set_status(self, job_id, status, last_error=None, payload_json=None):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-        cur.execute("""
+        query = """
             UPDATE jobs
             SET status=?, last_error=?, payload_json=?, updated_at=CURRENT_TIMESTAMP
             WHERE id=?
-        """, (status, last_error, payload_json, job_id))
-        conn.commit()
-        conn.close()
+            """
+        vars = (status, last_error, payload_json, job_id)
+
+        _execute(self.db_path, query, vars)
 
     def get_status(self, qso_id, job_type):
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
+        query = "SELECT status FROM jobs WHERE qso_id=? AND job_type=? ORDER BY created_at DESC"
+        vars = (qso_id, job_type)
 
-        row = cur.execute(
-            "SELECT status FROM jobs WHERE qso_id=? AND job_type=? ORDER BY created_at DESC",
-            (qso_id, job_type)
-        ).fetchone()
-
-        return row["status"] if row else None
+        return _fetchone(self.db_path, query, vars)
 
     def get_gen(self, qso_id):
-        gen_job = None
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
-        cur.execute("""
+        query = """
             SELECT * FROM jobs
             WHERE qso_id=? AND job_type='QSL_GEN' AND status='done'
             ORDER BY created_at DESC
             LIMIT 1
-        """, (qso_id,))
-        gen_job = cur.fetchone()
-        conn.close()
-        return gen_job
+            """
+        vars = (qso_id,)
+
+        return _fetchone(self.db_path, query, vars)
 
 
 class Pota:
@@ -474,27 +403,19 @@ class Stats:
         self.db_path = self.parent.db_path
 
     def total_qsos(self):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
+        query = "SELECT COUNT(*) FROM qsos"
+        vars = ()
 
-        count = cur.execute("SELECT COUNT(*) FROM qsos").fetchone()
-
-        return count[0]
+        return _fetchone(self.db_path, query, vars)
 
     def cards_sent(self):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
+        query = "SELECT COUNT(*) FROM jobs WHERE job_type = 'QSL_SEND' AND status = 'done'"
+        vars = ()
 
-        count = cur.execute("SELECT COUNT(*) FROM jobs WHERE job_type = 'QSL_SEND' AND status = 'done'").fetchone()
-
-        return count[0]
+        return _fetchone(self.db_path, query, vars)
 
     def bands(self, limit=8):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-
-        result = cur.execute(
-            """
+        query = """
             SELECT
                 band,
                 COUNT(*) AS qso_count
@@ -502,27 +423,14 @@ class Stats:
             GROUP BY band
             ORDER BY qso_count DESC
             LIMIT ?
-            """,
-            (
-                limit,
-            )
-        ).fetchall()
+            """
 
-        conn.close()
+        vars = (limit,)
 
-        result_dict = {}
-
-        for t in result:
-            result_dict[t[0]] = t[1]
-
-        return result_dict
+        return _fetchall(self.db_path, query, vars)
 
     def modes(self, limit=8):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-
-        result = cur.execute(
-            """
+        query = """
             SELECT
                 mode,
                 COUNT(*) AS qso_count
@@ -530,51 +438,28 @@ class Stats:
             GROUP BY mode
             ORDER BY qso_count DESC
             LIMIT ?
-            """,
-            (
-                limit,
-            )
-        ).fetchall()
+            """
+        vars = (limit,)
 
-        conn.close()
-
-        result_dict = {}
-
-        for t in result:
-            result_dict[t[0]] = t[1]
-
-        return result_dict
+        return _fetchall(self.db_path, query, vars)
 
     def qsos_by_day(self, history=7):
         now = datetime.now(timezone.utc)
-
         dates = [(now - timedelta(days=i)).date() for i in reversed(range(history + 1))]
-
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
 
         date_stats = {}
         for date in dates:
             date_string = str(date.strftime("%Y-%m-%d"))
-            date_stats[date_string] = cur.execute(
-                """
-                SELECT COUNT(*) FROM qsos WHERE qso_date IS ?
-                """,
-                (
-                    date_string,
-                )
-            ).fetchone()[0]
 
-        conn.close()
+            query = "SELECT COUNT(*) FROM qsos WHERE qso_date IS ?"
+            vars = (date_string,)
+
+            date_stats[date_string] = _fetchone(self.db_path, query, vars)
 
         return date_stats
 
     def top_countries(self, limit):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-
-        result = cur.execute(
-            """
+        query = """
             SELECT
                 cm.value AS country,
                 COUNT(q.id) AS qso_count
@@ -585,20 +470,10 @@ class Stats:
             GROUP BY cm.value
             ORDER BY qso_count DESC
             LIMIT ?
-            """,
-            (
-                limit,
-            )
-        ).fetchall()
+            """
+        vars = (limit,)
 
-        conn.close()
-
-        result_dict = {}
-
-        for t in result:
-            result_dict[t[0]] = t[1]
-
-        return result_dict
+        return _fetchall(self.db_path, query, vars)
 
     def top_states(self, limit):
         conn = sqlite3.connect(self.db_path)
@@ -633,11 +508,7 @@ class Stats:
         return result_dict
 
     def top_stations(self, limit):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-
-        result = cur.execute(
-            """
+        query = """
             SELECT
                 callsign,
                 COUNT(*) AS qso_count
@@ -645,20 +516,10 @@ class Stats:
             GROUP BY callsign
             ORDER BY qso_count DESC
             LIMIT ?
-            """,
-            (
-                limit,
-            )
-        ).fetchall()
+            """
+        vars = (limit,)
 
-        conn.close()
-
-        result_dict = {}
-
-        for t in result:
-            result_dict[t[0]] = t[1]
-
-        return result_dict
+        return _fetchall(self.db_path, query, vars)
 
 class Db:
     def __init__(self, db_path):
