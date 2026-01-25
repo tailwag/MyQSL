@@ -374,8 +374,9 @@ class Job:
             LIMIT 1
             """
         vars = (qso_id,)
+        fetch = 'one'
 
-        return _fetchone(self.db_path, query, vars)
+        return _rowfactory(self.db_path, query, vars, fetch)
 
 
 class Pota:

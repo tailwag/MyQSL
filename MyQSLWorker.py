@@ -64,7 +64,7 @@ def process_qsl_send(job):
 
     except Exception as e:
         db.job.set_status(job["id"], "failed", last_error=str(e))
-        print(f"QSL_SEND failed for QSO {qso_id}: {e}")
+        print(f"QSL_SEND failed for QSO {qso_id}: {str(e)}")
 
 
 def process_qrz_log(job):
