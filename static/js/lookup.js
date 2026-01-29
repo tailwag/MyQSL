@@ -5,7 +5,7 @@ function setUTCDate() {
     const now = new Date();
     const utc = now.toISOString().replace("T", " ").substring(0,16).replace(":", "") + " UTC";
     const field = document.getElementById("dateField");
-    if (!field.value) field.value = utc;
+    if (!field.value || field.value != utc) field.value = utc;
 }
 
 function setBand(band) {

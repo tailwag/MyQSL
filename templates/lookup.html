@@ -66,7 +66,10 @@
                             <!-- DATE -->
                             <div class="mb-3">
                                 <label class="form-label">Date (UTC)</label>
-                                <input required class="form-control" name="Date" id="dateField" value="{{ qslInfo.Date or '' }}">
+                                <div class="input-group">
+                                    <input required class="form-control" name="Date" id="dateField" value="{{ qslInfo.Date or '' }}">
+                                    <button type="button" class="btn btn-outline-secondary" tabindex="-1" onclick="setUTCDate()">Now</button>
+                                </div>
                             </div>
 
                             <!-- BAND -->
