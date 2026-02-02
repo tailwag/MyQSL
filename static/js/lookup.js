@@ -1,11 +1,11 @@
 var frequencyAdjusted = false;
 
 // Auto-populate date in UTC if empty
-function setUTCDate() {
+function setUTCDate(var manual = false) {
     const now = new Date();
     const utc = now.toISOString().replace("T", " ").substring(0,16).replace(":", "") + " UTC";
     const field = document.getElementById("dateField");
-    if (!field.value || field.value != utc) field.value = utc;
+    if (!field.value || manual === true) field.value = utc;
 }
 
 function setBand(band) {
