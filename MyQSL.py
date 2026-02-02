@@ -6,6 +6,7 @@
 ####################################################################
 
 import os
+import re
 import json
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 from MyQSL.thumbnail import thumbnail_check
@@ -137,7 +138,6 @@ def lookup(callsign, stroke):
             if os.path.isfile(card_path):
                 qso["CARD_PATH"] = card_path
 
-
     qslInfo = {
         "With": callsign,
         "Band": session.get("last_band", ""),
@@ -190,6 +190,7 @@ def history(callsign, stroke):
         qsos=qso_history
     )
 
+
 @app.route("/edit/<qso_id>", methods=["GET"])
 def edit_qso(qso_id):
     qso = db.qso.get_by_id(qso_id)
@@ -197,10 +198,11 @@ def edit_qso(qso_id):
         return ("Invalid QSO ID", 400)
 
     qsodata = json.loads(qso.get("payload_json"))
+    if qsodata.get("Freq") is not None:
+        qsodata["Freq"] = re.sub('[a-zA-Z]', '', qsodata["Freq"])
 
     callsign = qsodata.get("With")
     qrz_info = expand_class(qrz.lookup(callsign))
-
 
     if qrz_info:
         q_call = qrz_info.get('callsign')
@@ -243,6 +245,7 @@ def edit_qso(qso_id):
         qso_history=qso_history,
         qslInfo=qsodata
     )
+
 
 @app.route("/qsl/choose", methods=["POST"])
 def choose_qsl():
