@@ -1,7 +1,7 @@
 var frequencyAdjusted = false;
 
 // Auto-populate date in UTC if empty
-function setUTCDate(var manual = false) {
+function setUTCDate(manual = false) {
     const now = new Date();
     const utc = now.toISOString().replace("T", " ").substring(0,16).replace(":", "") + " UTC";
     const field = document.getElementById("dateField");
